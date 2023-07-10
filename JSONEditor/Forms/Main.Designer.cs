@@ -63,7 +63,7 @@
             MainMenu.Location = new Point(0, 0);
             MainMenu.Margin = new Padding(0, 0, 0, 10);
             MainMenu.Name = "MainMenu";
-            MainMenu.Size = new Size(799, 24);
+            MainMenu.Size = new Size(1014, 24);
             MainMenu.TabIndex = 0;
             MainMenu.Text = "menuStrip1";
             // 
@@ -90,6 +90,7 @@
             OpenFolderMenuItem.ShortcutKeys = Keys.Control | Keys.Shift | Keys.O;
             OpenFolderMenuItem.Size = new Size(242, 22);
             OpenFolderMenuItem.Text = "Open Folder";
+            OpenFolderMenuItem.Click += OpenFolderMenuItem_Click;
             // 
             // toolStripSeparator2
             // 
@@ -121,10 +122,10 @@
             // 
             TreePanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             TreePanel.Controls.Add(MainTreeView);
-            TreePanel.Location = new Point(305, 34);
+            TreePanel.Location = new Point(395, 34);
             TreePanel.Margin = new Padding(0, 0, 0, 5);
             TreePanel.Name = "TreePanel";
-            TreePanel.Size = new Size(485, 303);
+            TreePanel.Size = new Size(610, 479);
             TreePanel.TabIndex = 1;
             // 
             // MainTreeView
@@ -135,7 +136,7 @@
             MainTreeView.Dock = DockStyle.Fill;
             MainTreeView.Location = new Point(0, 0);
             MainTreeView.Name = "MainTreeView";
-            MainTreeView.Size = new Size(485, 303);
+            MainTreeView.Size = new Size(610, 479);
             MainTreeView.TabIndex = 0;
             MainTreeView.AfterLabelEdit += MainTreeView_AfterLabelEdit;
             MainTreeView.NodeMouseDoubleClick += MainTreeView_NodeMouseDoubleClick;
@@ -171,7 +172,7 @@
             MultiFilePanel.Location = new Point(9, 34);
             MultiFilePanel.Margin = new Padding(0, 0, 5, 0);
             MultiFilePanel.Name = "MultiFilePanel";
-            MultiFilePanel.Size = new Size(291, 303);
+            MultiFilePanel.Size = new Size(378, 479);
             MultiFilePanel.TabIndex = 2;
             // 
             // MultiFileTreeView
@@ -186,7 +187,7 @@
             MultiFileTreeView.Location = new Point(0, 0);
             MultiFileTreeView.Name = "MultiFileTreeView";
             MultiFileTreeView.SelectedImageIndex = 0;
-            MultiFileTreeView.Size = new Size(291, 303);
+            MultiFileTreeView.Size = new Size(378, 479);
             MultiFileTreeView.TabIndex = 0;
             MultiFileTreeView.NodeMouseDoubleClick += MultiFileTreeView_NodeMouseDoubleClick;
             // 
@@ -217,7 +218,7 @@
             AutoScaleDimensions = new SizeF(8F, 16F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Gainsboro;
-            ClientSize = new Size(799, 346);
+            ClientSize = new Size(1014, 522);
             Controls.Add(MultiFilePanel);
             Controls.Add(TreePanel);
             Controls.Add(MainMenu);

@@ -50,10 +50,6 @@ namespace JSONEditor
             }
             SettingsHelper.Save(AppSettings);
         }
-        private void ClearFileTree()
-        {
-            MultiFileTreeView.Nodes.Clear();
-        }
         private void OpenFileMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -63,12 +59,12 @@ namespace JSONEditor
             {
                 JsonFileList.Clear();
                 JsonFileList.Add(new FileList() { Name = Path.GetFileNameWithoutExtension(ofd.FileName), FilePath = ofd.FileName, Token = JsonHelper.LoadJsonData(ofd.FileName) });
-                ClearFileTree();
                 UpdateFileTreeView();
             }
         }
         private void UpdateFileTreeView()
         {
+            MultiFileTreeView.Nodes.Clear();
             MultiFileTreeView.BeginUpdate();
             foreach (FileList jsonFile in JsonFileList)
             {
@@ -757,6 +753,28 @@ namespace JSONEditor
             FileList selectedFileList = selectedNode.Tag as FileList;
             JsonHelper.WriteToJsonFile(selectedFileList.Token, selectedFileList.FilePath);
             selectedNode.NodeFont = new Font("Verdana", 9.75f, FontStyle.Regular);
+        }
+
+        private void OpenFolderMenuItem_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            fbd.Description = "Select a folder that contains the files you want to edit.";
+            fbd.ShowNewFolderButton = false;
+            fbd.ShowDialog();
+            if (fbd.SelectedPath != "")
+            {
+                string[] files = Directory.GetFiles(fbd.SelectedPath, "*.json", SearchOption.AllDirectories);
+                foreach (string file in files)
+                {
+                    FileList fl = new FileList();
+                    fl.FilePath = file;
+                    fl.Name = Path.GetFileNameWithoutExtension(file);
+                    fl.Token = JsonHelper.LoadJsonData(file);
+                    fl.EditedAfterLoad = false;
+                    JsonFileList.Add(fl);
+                }
+                UpdateFileTreeView();
+            }
         }
     }
 }
