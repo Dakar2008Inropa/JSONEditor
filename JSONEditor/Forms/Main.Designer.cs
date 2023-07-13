@@ -38,21 +38,22 @@
             toolStripMenuItem1 = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             ExitMenuItem = new ToolStripMenuItem();
-            TreePanel = new Panel();
             MainTreeView = new TreeView();
             MainTreeContextMenu = new ContextMenuStrip(components);
             MainTree_CollapseAllMenuItem = new ToolStripMenuItem();
             MainTree_ExpandAllMenuItem = new ToolStripMenuItem();
-            MultiFilePanel = new Panel();
             MultiFileTreeView = new TreeView();
             MultiFileTreeViewContextMenu = new ContextMenuStrip(components);
             MultiFileTreeView_SaveSelectedNodeMenuItem = new ToolStripMenuItem();
             MultiFileTreeViewImgList = new ImageList(components);
+            splitContainer1 = new SplitContainer();
             MainMenu.SuspendLayout();
-            TreePanel.SuspendLayout();
             MainTreeContextMenu.SuspendLayout();
-            MultiFilePanel.SuspendLayout();
             MultiFileTreeViewContextMenu.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
             SuspendLayout();
             // 
             // MainMenu
@@ -63,7 +64,7 @@
             MainMenu.Location = new Point(0, 0);
             MainMenu.Margin = new Padding(0, 0, 0, 10);
             MainMenu.Name = "MainMenu";
-            MainMenu.Size = new Size(1014, 24);
+            MainMenu.Size = new Size(799, 24);
             MainMenu.TabIndex = 0;
             MainMenu.Text = "menuStrip1";
             // 
@@ -118,16 +119,6 @@
             ExitMenuItem.Size = new Size(242, 22);
             ExitMenuItem.Text = "Exit";
             // 
-            // TreePanel
-            // 
-            TreePanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            TreePanel.Controls.Add(MainTreeView);
-            TreePanel.Location = new Point(395, 34);
-            TreePanel.Margin = new Padding(0, 0, 0, 5);
-            TreePanel.Name = "TreePanel";
-            TreePanel.Size = new Size(610, 479);
-            TreePanel.TabIndex = 1;
-            // 
             // MainTreeView
             // 
             MainTreeView.BackColor = Color.White;
@@ -136,7 +127,7 @@
             MainTreeView.Dock = DockStyle.Fill;
             MainTreeView.Location = new Point(0, 0);
             MainTreeView.Name = "MainTreeView";
-            MainTreeView.Size = new Size(610, 479);
+            MainTreeView.Size = new Size(517, 354);
             MainTreeView.TabIndex = 0;
             MainTreeView.AfterLabelEdit += MainTreeView_AfterLabelEdit;
             MainTreeView.NodeMouseDoubleClick += MainTreeView_NodeMouseDoubleClick;
@@ -165,16 +156,6 @@
             MainTree_ExpandAllMenuItem.Text = "Expand All";
             MainTree_ExpandAllMenuItem.Click += MainTree_ExpandAllMenuItem_Click;
             // 
-            // MultiFilePanel
-            // 
-            MultiFilePanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
-            MultiFilePanel.Controls.Add(MultiFileTreeView);
-            MultiFilePanel.Location = new Point(9, 34);
-            MultiFilePanel.Margin = new Padding(0, 0, 5, 0);
-            MultiFilePanel.Name = "MultiFilePanel";
-            MultiFilePanel.Size = new Size(378, 479);
-            MultiFilePanel.TabIndex = 2;
-            // 
             // MultiFileTreeView
             // 
             MultiFileTreeView.BackColor = Color.White;
@@ -187,7 +168,7 @@
             MultiFileTreeView.Location = new Point(0, 0);
             MultiFileTreeView.Name = "MultiFileTreeView";
             MultiFileTreeView.SelectedImageIndex = 0;
-            MultiFileTreeView.Size = new Size(378, 479);
+            MultiFileTreeView.Size = new Size(260, 354);
             MultiFileTreeView.TabIndex = 0;
             MultiFileTreeView.NodeMouseDoubleClick += MultiFileTreeView_NodeMouseDoubleClick;
             // 
@@ -213,14 +194,31 @@
             MultiFileTreeViewImgList.TransparentColor = Color.Transparent;
             MultiFileTreeViewImgList.Images.SetKeyName(0, "Custom-Icon-Design-Flatastic-1-Document.48.png");
             // 
+            // splitContainer1
+            // 
+            splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            splitContainer1.Location = new Point(9, 34);
+            splitContainer1.Margin = new Padding(0);
+            splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            splitContainer1.Panel1.Controls.Add(MultiFileTreeView);
+            // 
+            // splitContainer1.Panel2
+            // 
+            splitContainer1.Panel2.Controls.Add(MainTreeView);
+            splitContainer1.Size = new Size(781, 354);
+            splitContainer1.SplitterDistance = 260;
+            splitContainer1.TabIndex = 3;
+            // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(8F, 16F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Gainsboro;
-            ClientSize = new Size(1014, 522);
-            Controls.Add(MultiFilePanel);
-            Controls.Add(TreePanel);
+            ClientSize = new Size(799, 397);
+            Controls.Add(splitContainer1);
             Controls.Add(MainMenu);
             Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -233,10 +231,12 @@
             Load += Main_Load;
             MainMenu.ResumeLayout(false);
             MainMenu.PerformLayout();
-            TreePanel.ResumeLayout(false);
             MainTreeContextMenu.ResumeLayout(false);
-            MultiFilePanel.ResumeLayout(false);
             MultiFileTreeViewContextMenu.ResumeLayout(false);
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -245,12 +245,10 @@
 
         private MenuStrip MainMenu;
         private ToolStripMenuItem FileMenuItem;
-        private Panel TreePanel;
         private ToolStripMenuItem OpenFileMenuItem;
         private ToolStripMenuItem OpenFolderMenuItem;
         private ToolStripMenuItem ExitMenuItem;
         private ToolStripSeparator toolStripSeparator2;
-        private Panel MultiFilePanel;
         private TreeView MainTreeView;
         private TreeView MultiFileTreeView;
         private ToolStripSeparator toolStripSeparator3;
@@ -261,5 +259,6 @@
         private ToolStripMenuItem MainTree_CollapseAllMenuItem;
         private ToolStripMenuItem MainTree_ExpandAllMenuItem;
         private ToolStripMenuItem MultiFileTreeView_SaveSelectedNodeMenuItem;
+        private SplitContainer splitContainer1;
     }
 }

@@ -9,18 +9,26 @@ namespace JSONEditor
     public partial class Main : Form
     {
         private Settings AppSettings { get; set; }
+
         private List<FileList> JsonFileList { get; set; }
+
+        private List<FolderList> JsonFolders { get; set; }
+
         private JToken LoadedToken { get; set; }
+
         public Main()
         {
             AppSettings = SettingsHelper.Load();
             JsonFileList = new List<FileList>();
+            JsonFolders = new List<FolderList>();
             InitializeComponent();
         }
+
         private void Main_Load(object sender, EventArgs e)
         {
             SetWindowPositionAndSize();
         }
+
         private void SetWindowPositionAndSize()
         {
             if (AppSettings.Maximized)
@@ -30,10 +38,12 @@ namespace JSONEditor
             Location = new Point(AppSettings.WindowPosition.X, AppSettings.WindowPosition.Y);
             Size = new Size(AppSettings.WindowSize.Width, AppSettings.WindowSize.Height);
         }
+
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
             SaveSettings();
         }
+
         private void SaveSettings()
         {
             if (WindowState == FormWindowState.Maximized)
@@ -50,6 +60,7 @@ namespace JSONEditor
             }
             SettingsHelper.Save(AppSettings);
         }
+
         private void OpenFileMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -62,15 +73,34 @@ namespace JSONEditor
                 UpdateFileTreeView();
             }
         }
-        private void UpdateFileTreeView()
+
+        private void UpdateFileTreeView(bool FolderStructure = false)
         {
             MultiFileTreeView.Nodes.Clear();
             MultiFileTreeView.BeginUpdate();
-            foreach (FileList jsonFile in JsonFileList)
+            if (FolderStructure)
             {
-                TreeNode tNode = new TreeNode();
-                tNode = MultiFileTreeView.Nodes[MultiFileTreeView.Nodes.Add(new TreeNode(jsonFile.Name, 0, 0))];
-                tNode.Tag = jsonFile;
+                foreach (FolderList folder in JsonFolders)
+                {
+                    TreeNode tNode = new TreeNode();
+                    tNode = MultiFileTreeView.Nodes[MultiFileTreeView.Nodes.Add(new TreeNode(folder.Name, 0, 0))];
+                    tNode.Tag = folder;
+                    foreach (FileList file in folder.Files)
+                    {
+                        TreeNode fNode = new TreeNode();
+                        fNode = tNode.Nodes[tNode.Nodes.Add(new TreeNode(file.Name, 0, 0))];
+                        fNode.Tag = file;
+                    }
+                }
+            }
+            else
+            {
+                foreach (FileList jsonFile in JsonFileList)
+                {
+                    TreeNode tNode = new TreeNode();
+                    tNode = MultiFileTreeView.Nodes[MultiFileTreeView.Nodes.Add(new TreeNode(jsonFile.Name, 0, 0))];
+                    tNode.Tag = jsonFile;
+                }
             }
             MultiFileTreeView.EndUpdate();
         }
@@ -95,11 +125,13 @@ namespace JSONEditor
             }
             MainTreeView.EndUpdate();
         }
+
         private void AddNode(JToken token, TreeNode inTreeNode)
         {
             TreeNode childNode = new TreeNode();
             CheckToken(token, childNode, inTreeNode);
         }
+
         private void CheckToken(JToken token, TreeNode childNode, TreeNode inTreeNode)
         {
             if (token == null)
@@ -141,6 +173,7 @@ namespace JSONEditor
                 }
             }
         }
+
         private void GetJObjectProperties(TreeNode childNode, TreeNode inTreeNode, JToken token)
         {
             var obj = (JObject)token;
@@ -228,6 +261,7 @@ namespace JSONEditor
                 }
             }
         }
+
         private void GetJArray(TreeNode childNode, TreeNode inTreeNode, JToken token)
         {
             var array = (JArray)token;
@@ -248,10 +282,12 @@ namespace JSONEditor
                 AddNode(array[i], childNode);
             }
         }
+
         static bool IsEndValue(JProperty property, bool isDataSetLoader = false)
         {
             return (property.Children().Count() == 1 && (property.Children().FirstOrDefault().Type != JTokenType.Object) && (property.Children().FirstOrDefault().Type != JTokenType.Array));
         }
+
         private void ColorizeEditedNode(TreeNode node, Color color, Color foregroundC)
         {
             node.BackColor = color;
@@ -264,6 +300,7 @@ namespace JSONEditor
                 parent = parent.Parent;
             }
         }
+
         private void MainTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             var JNodeTag = this.MainTreeView.SelectedNode.Tag as TreeNodeTagClass;
@@ -372,6 +409,7 @@ namespace JSONEditor
                 }
             }
         }
+
         private void MainTreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
             var treeview = sender as TreeView;
@@ -498,6 +536,7 @@ namespace JSONEditor
                 }
             }
         }
+
         private void MainTreeView_KeyDown(object sender, KeyEventArgs e)
         {
             TreeNode selectedNode = MainTreeView.SelectedNode;
@@ -715,6 +754,7 @@ namespace JSONEditor
                 }
             }
         }
+
         private void WriteToSelectedNode(JToken root)
         {
             TreeNode selectedNode = MultiFileTreeView.SelectedNode;
@@ -726,6 +766,7 @@ namespace JSONEditor
                 selectedNode.NodeFont = new Font("Verdana", 9.75f, FontStyle.Bold);
             }
         }
+
         private void MultiFileTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             FileList selectedNode = e.Node.Tag as FileList;
@@ -763,18 +804,43 @@ namespace JSONEditor
             fbd.ShowDialog();
             if (fbd.SelectedPath != "")
             {
-                string[] files = Directory.GetFiles(fbd.SelectedPath, "*.json", SearchOption.AllDirectories);
-                foreach (string file in files)
+                string[] directories = Directory.GetDirectories(fbd.SelectedPath, "*", SearchOption.AllDirectories);
+                foreach (string folder in directories)
                 {
-                    FileList fl = new FileList();
-                    fl.FilePath = file;
-                    fl.Name = Path.GetFileNameWithoutExtension(file);
-                    fl.Token = JsonHelper.LoadJsonData(file);
-                    fl.EditedAfterLoad = false;
-                    JsonFileList.Add(fl);
+                    string[] files = Directory.GetFiles(folder, "*.json", SearchOption.AllDirectories);
+                    if (files.Length > 0)
+                    {
+                        DirectoryInfo thisDir = new DirectoryInfo(folder);
+                        FolderList newFolder = new FolderList();
+                        newFolder.Name = thisDir.Name;
+                        newFolder.FolderPath = thisDir.FullName;
+                        List<FileList> thisFolderFiles = new List<FileList>();
+                        foreach (string file in files)
+                        {
+                            FileList fl = new FileList();
+                            fl.FilePath = file;
+                            fl.Name = Path.GetFileNameWithoutExtension(file);
+                            fl.Token = JsonHelper.LoadJsonData(file);
+                            fl.EditedAfterLoad = false;
+                            if (!TokenIsEmpty(fl.Token))
+                            {
+                                thisFolderFiles.Add(fl);
+                            }
+                        }
+                        newFolder.Files = thisFolderFiles;
+                        JsonFolders.Add(newFolder);
+                    }
                 }
-                UpdateFileTreeView();
+                UpdateFileTreeView(true);
             }
+        }
+
+        public static bool TokenIsEmpty(JToken token)
+        {
+            return (token.Type == JTokenType.Array && !token.HasValues) ||
+                   (token.Type == JTokenType.Object && !token.HasValues) ||
+                   (token.Type == JTokenType.String && token.ToString() == String.Empty) ||
+                   (token.Type == JTokenType.Null);
         }
     }
 }
