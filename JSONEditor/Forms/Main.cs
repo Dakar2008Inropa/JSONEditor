@@ -3,6 +3,8 @@ using JSONEditor.Classes.Tools;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using System.Formats.Asn1;
+using System.IO;
 
 namespace JSONEditor
 {
@@ -37,6 +39,7 @@ namespace JSONEditor
             }
             Location = new Point(AppSettings.WindowPosition.X, AppSettings.WindowPosition.Y);
             Size = new Size(AppSettings.WindowSize.Width, AppSettings.WindowSize.Height);
+            splitContainer1.SplitterDistance = AppSettings.SplitterDistance;
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -58,6 +61,7 @@ namespace JSONEditor
                 AppSettings.WindowSize.Height = Size.Height;
                 AppSettings.Maximized = false;
             }
+            AppSettings.SplitterDistance = splitContainer1.SplitterDistance;
             SettingsHelper.Save(AppSettings);
         }
 
@@ -83,7 +87,7 @@ namespace JSONEditor
                 foreach (FolderList folder in JsonFolders)
                 {
                     TreeNode tNode = new TreeNode();
-                    tNode = MultiFileTreeView.Nodes[MultiFileTreeView.Nodes.Add(new TreeNode(folder.Name, 0, 0))];
+                    tNode = MultiFileTreeView.Nodes[MultiFileTreeView.Nodes.Add(new TreeNode(folder.Name, 1, 1))];
                     tNode.Tag = folder;
                     foreach (FileList file in folder.Files)
                     {
@@ -546,209 +550,237 @@ namespace JSONEditor
                 {
                     MainTreeView_NodeMouseDoubleClick(MainTreeView, new TreeNodeMouseClickEventArgs(selectedNode, MouseButtons.Left, 2, 0, 0));
                 }
-                if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Multiply)
+                if((ModifierKeys & Keys.Control) == Keys.Control)
                 {
-                    //Double up value
-                    var JPropTag = selectedNode.Tag as TreeNodeTagClass;
-                    var JPropNode = JPropTag.JsonObject as JProperty;
-                    if (JPropNode != null)
+                    if (e.KeyCode == Keys.Multiply)
                     {
-                        if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                        //Double up value
+                        var JPropTag = selectedNode.Tag as TreeNodeTagClass;
+                        var JPropNode = JPropTag.JsonObject as JProperty;
+                        if (JPropNode != null)
                         {
-                            float value = Convert.ToSingle(JPropNode.Value);
-                            value *= 2;
-                            JPropNode.Value = value;
-                            selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
-                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                            WriteToSelectedNode(LoadedToken);
-                        }
-                        else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
-                        {
-                            int value = (int)JPropNode.Value;
-                            value *= 2;
-                            JPropNode.Value = value;
-                            selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
-                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                            WriteToSelectedNode(LoadedToken);
-                        }
-                    }
-                    else
-                    {
-                        var JsonValue = JPropTag.JsonObject as JValue;
-                        if (JsonValue != null)
-                        {
-                            if (JsonValue.Type == JTokenType.Integer)
+                            if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
                             {
-                                int value = (int)JsonValue.Value;
+                                float value = Convert.ToSingle(JPropNode.Value);
                                 value *= 2;
-                                JsonValue.Value = value;
-                                selectedNode.Text = value.ToString();
+                                JPropNode.Value = value;
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode(LoadedToken);
                             }
-                            else if (JsonValue.Type == JTokenType.Float)
+                            else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
                             {
-                                float value = Convert.ToSingle(JsonValue.Value);
+                                int value = (int)JPropNode.Value;
                                 value *= 2;
-                                JsonValue.Value = value;
-                                selectedNode.Text = value.ToString();
+                                JPropNode.Value = value;
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode(LoadedToken);
                             }
                         }
-                    }
-                }
-                if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Divide)
-                {
-                    //Half the value
-                    var JPropTag = selectedNode.Tag as TreeNodeTagClass;
-                    var JPropNode = JPropTag.JsonObject as JProperty;
-                    if (JPropNode != null)
-                    {
-                        if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                        else
                         {
-                            float value = Convert.ToSingle(JPropNode.Value);
-                            value /= 2;
-                            JPropNode.Value = value;
-                            selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
-                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                            WriteToSelectedNode(LoadedToken);
-                        }
-                        else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
-                        {
-                            int value = (int)JPropNode.Value;
-                            value /= 2;
-                            JPropNode.Value = value;
-                            selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
-                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                            WriteToSelectedNode(LoadedToken);
-                        }
-                    }
-                    else
-                    {
-                        var JsonValue = JPropTag.JsonObject as JValue;
-                        if (JsonValue != null)
-                        {
-                            if (JsonValue.Type == JTokenType.Integer)
+                            var JsonValue = JPropTag.JsonObject as JValue;
+                            if (JsonValue != null)
                             {
-                                int value = (int)JsonValue.Value;
+                                if (JsonValue.Type == JTokenType.Integer)
+                                {
+                                    int value = (int)JsonValue.Value;
+                                    value *= 2;
+                                    JsonValue.Value = value;
+                                    selectedNode.Text = value.ToString();
+                                    ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                    WriteToSelectedNode(LoadedToken);
+                                }
+                                else if (JsonValue.Type == JTokenType.Float)
+                                {
+                                    float value = Convert.ToSingle(JsonValue.Value);
+                                    value *= 2;
+                                    JsonValue.Value = value;
+                                    selectedNode.Text = value.ToString();
+                                    ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                    WriteToSelectedNode(LoadedToken);
+                                }
+                            }
+                        }
+                    }
+                    if (e.KeyCode == Keys.Divide)
+                    {
+                        //Half the value
+                        var JPropTag = selectedNode.Tag as TreeNodeTagClass;
+                        var JPropNode = JPropTag.JsonObject as JProperty;
+                        if (JPropNode != null)
+                        {
+                            if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                            {
+                                float value = Convert.ToSingle(JPropNode.Value);
                                 value /= 2;
-                                JsonValue.Value = value;
-                                selectedNode.Text = value.ToString();
+                                JPropNode.Value = value;
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode(LoadedToken);
                             }
-                            else if (JsonValue.Type == JTokenType.Float)
+                            else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
                             {
-                                float value = Convert.ToSingle(JsonValue.Value);
+                                int value = (int)JPropNode.Value;
                                 value /= 2;
-                                JsonValue.Value = value;
-                                selectedNode.Text = value.ToString();
+                                JPropNode.Value = value;
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode(LoadedToken);
                             }
                         }
-                    }
-                }
-                if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Add)
-                {
-                    var JPropTag = selectedNode.Tag as TreeNodeTagClass;
-                    var JPropNode = JPropTag.JsonObject as JProperty;
-                    if (JPropNode != null)
-                    {
-                        if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                        else
                         {
-                            float value = Convert.ToSingle(JPropNode.Value);
-                            value += 5;
-                            JPropNode.Value = value;
-                            selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
-                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                            WriteToSelectedNode(LoadedToken);
-                        }
-                        else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
-                        {
-                            int value = (int)JPropNode.Value;
-                            value += 5;
-                            JPropNode.Value = value;
-                            selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
-                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                            WriteToSelectedNode(LoadedToken);
-                        }
-                    }
-                    else
-                    {
-                        var JsonValue = JPropTag.JsonObject as JValue;
-                        if (JsonValue != null)
-                        {
-                            if (JsonValue.Type == JTokenType.Integer)
+                            var JsonValue = JPropTag.JsonObject as JValue;
+                            if (JsonValue != null)
                             {
-                                int value = (int)JsonValue.Value;
+                                if (JsonValue.Type == JTokenType.Integer)
+                                {
+                                    int value = (int)JsonValue.Value;
+                                    value /= 2;
+                                    JsonValue.Value = value;
+                                    selectedNode.Text = value.ToString();
+                                    ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                    WriteToSelectedNode(LoadedToken);
+                                }
+                                else if (JsonValue.Type == JTokenType.Float)
+                                {
+                                    float value = Convert.ToSingle(JsonValue.Value);
+                                    value /= 2;
+                                    JsonValue.Value = value;
+                                    selectedNode.Text = value.ToString();
+                                    ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                    WriteToSelectedNode(LoadedToken);
+                                }
+                            }
+                        }
+                    }
+                    if (e.KeyCode == Keys.Add)
+                    {
+                        var JPropTag = selectedNode.Tag as TreeNodeTagClass;
+                        var JPropNode = JPropTag.JsonObject as JProperty;
+                        if (JPropNode != null)
+                        {
+                            if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                            {
+                                float value = Convert.ToSingle(JPropNode.Value);
                                 value += 5;
-                                JsonValue.Value = value;
-                                selectedNode.Text = value.ToString();
+                                JPropNode.Value = value;
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode(LoadedToken);
                             }
-                            else if (JsonValue.Type == JTokenType.Float)
+                            else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
                             {
-                                float value = Convert.ToSingle(JsonValue.Value);
+                                int value = (int)JPropNode.Value;
                                 value += 5;
-                                JsonValue.Value = value;
-                                selectedNode.Text = value.ToString();
+                                JPropNode.Value = value;
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode(LoadedToken);
+                            }
+                        }
+                        else
+                        {
+                            var JsonValue = JPropTag.JsonObject as JValue;
+                            if (JsonValue != null)
+                            {
+                                if (JsonValue.Type == JTokenType.Integer)
+                                {
+                                    int value = (int)JsonValue.Value;
+                                    value += 5;
+                                    JsonValue.Value = value;
+                                    selectedNode.Text = value.ToString();
+                                    ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                    WriteToSelectedNode(LoadedToken);
+                                }
+                                else if (JsonValue.Type == JTokenType.Float)
+                                {
+                                    float value = Convert.ToSingle(JsonValue.Value);
+                                    value += 5;
+                                    JsonValue.Value = value;
+                                    selectedNode.Text = value.ToString();
+                                    ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                    WriteToSelectedNode(LoadedToken);
+                                }
                             }
                         }
                     }
-                }
-                if (e.Modifiers == Keys.Control && e.KeyCode == Keys.Subtract)
-                {
-                    var JPropTag = selectedNode.Tag as TreeNodeTagClass;
-                    var JPropNode = JPropTag.JsonObject as JProperty;
-                    if (JPropNode != null)
+                    if (e.KeyCode == Keys.Subtract)
                     {
-                        if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                        var JPropTag = selectedNode.Tag as TreeNodeTagClass;
+                        var JPropNode = JPropTag.JsonObject as JProperty;
+                        if (JPropNode != null)
                         {
-                            float value = Convert.ToSingle(JPropNode.Value);
-                            value -= 5;
-                            JPropNode.Value = value;
-                            selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
-                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                            WriteToSelectedNode(LoadedToken);
+                            if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                            {
+                                float value = Convert.ToSingle(JPropNode.Value);
+                                value -= 5;
+                                JPropNode.Value = value;
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                WriteToSelectedNode(LoadedToken);
+                            }
+                            else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
+                            {
+                                int value = (int)JPropNode.Value;
+                                value -= 5;
+                                JPropNode.Value = value;
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                WriteToSelectedNode(LoadedToken);
+                            }
                         }
-                        else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
+                        else
                         {
-                            int value = (int)JPropNode.Value;
-                            value -= 5;
-                            JPropNode.Value = value;
-                            selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
-                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                            WriteToSelectedNode(LoadedToken);
+                            var JsonValue = JPropTag.JsonObject as JValue;
+                            if (JsonValue != null)
+                            {
+                                if (JsonValue.Type == JTokenType.Integer)
+                                {
+                                    int value = (int)JsonValue.Value;
+                                    value -= 5;
+                                    JsonValue.Value = value;
+                                    selectedNode.Text = value.ToString();
+                                    ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                    WriteToSelectedNode(LoadedToken);
+                                }
+                                else if (JsonValue.Type == JTokenType.Float)
+                                {
+                                    float value = Convert.ToSingle(JsonValue.Value);
+                                    value -= 5;
+                                    JsonValue.Value = value;
+                                    selectedNode.Text = value.ToString();
+                                    ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                                    WriteToSelectedNode(LoadedToken);
+                                }
+                            }
                         }
                     }
-                    else
+                    if (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right)
                     {
-                        var JsonValue = JPropTag.JsonObject as JValue;
-                        if (JsonValue != null)
+                        MainTreeView.LabelEdit = true;
+                        var selectedNodeTag = selectedNode.Tag as TreeNodeTagClass;
+                        var JPropToken = selectedNodeTag.JsonObject as JToken;
+                        var JProp = selectedNodeTag.JsonObject as JProperty;
+                        var oldvalue = selectedNode.Text;
+                        if (JPropToken.FirstOrDefault().Type == JTokenType.Integer || JPropToken.FirstOrDefault().Type == JTokenType.Float)
                         {
-                            if (JsonValue.Type == JTokenType.Integer)
+                            if (JPropToken.FirstOrDefault().Value<int>() > 0)
                             {
-                                int value = (int)JsonValue.Value;
-                                value -= 5;
-                                JsonValue.Value = value;
-                                selectedNode.Text = value.ToString();
-                                ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                JPropToken.FirstOrDefault().Replace(JPropToken.FirstOrDefault().Value<int>() * -1);
                             }
-                            else if (JsonValue.Type == JTokenType.Float)
+                            else if (JPropToken.FirstOrDefault().Value<int>() < 0)
                             {
-                                float value = Convert.ToSingle(JsonValue.Value);
-                                value -= 5;
-                                JsonValue.Value = value;
-                                selectedNode.Text = value.ToString();
-                                ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                JPropToken.FirstOrDefault().Replace(JPropToken.FirstOrDefault().Value<int>() * -1);
                             }
+                            selectedNode.Text = $"{JProp.Name.ToSpacedName()}: {JPropToken.FirstOrDefault().Value<string>()}";
+                            if (selectedNode.Text != oldvalue)
+                            {
+                                ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            }
+                            WriteToSelectedNode(LoadedToken);
                         }
                     }
                 }
@@ -763,7 +795,7 @@ namespace JSONEditor
                 FileList selectedItem = selectedNode.Tag as FileList;
                 selectedItem.EditedAfterLoad = true;
                 selectedItem.Token = root;
-                selectedNode.NodeFont = new Font("Verdana", 9.75f, FontStyle.Bold);
+                selectedNode.ForeColor = Color.Red;
             }
         }
 

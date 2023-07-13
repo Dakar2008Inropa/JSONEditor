@@ -127,7 +127,7 @@
             MainTreeView.Dock = DockStyle.Fill;
             MainTreeView.Location = new Point(0, 0);
             MainTreeView.Name = "MainTreeView";
-            MainTreeView.Size = new Size(517, 354);
+            MainTreeView.Size = new Size(575, 354);
             MainTreeView.TabIndex = 0;
             MainTreeView.AfterLabelEdit += MainTreeView_AfterLabelEdit;
             MainTreeView.NodeMouseDoubleClick += MainTreeView_NodeMouseDoubleClick;
@@ -168,7 +168,7 @@
             MultiFileTreeView.Location = new Point(0, 0);
             MultiFileTreeView.Name = "MultiFileTreeView";
             MultiFileTreeView.SelectedImageIndex = 0;
-            MultiFileTreeView.Size = new Size(260, 354);
+            MultiFileTreeView.Size = new Size(200, 354);
             MultiFileTreeView.TabIndex = 0;
             MultiFileTreeView.NodeMouseDoubleClick += MultiFileTreeView_NodeMouseDoubleClick;
             // 
@@ -193,6 +193,7 @@
             MultiFileTreeViewImgList.ImageStream = (ImageListStreamer)resources.GetObject("MultiFileTreeViewImgList.ImageStream");
             MultiFileTreeViewImgList.TransparentColor = Color.Transparent;
             MultiFileTreeViewImgList.Images.SetKeyName(0, "Custom-Icon-Design-Flatastic-1-Document.48.png");
+            MultiFileTreeViewImgList.Images.SetKeyName(1, "Custom-Icon-Design-Flatastic-1-Folder.48.png");
             // 
             // splitContainer1
             // 
@@ -204,12 +205,14 @@
             // splitContainer1.Panel1
             // 
             splitContainer1.Panel1.Controls.Add(MultiFileTreeView);
+            splitContainer1.Panel1MinSize = 200;
             // 
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(MainTreeView);
             splitContainer1.Size = new Size(781, 354);
-            splitContainer1.SplitterDistance = 260;
+            splitContainer1.SplitterDistance = 200;
+            splitContainer1.SplitterWidth = 6;
             splitContainer1.TabIndex = 3;
             // 
             // Main
