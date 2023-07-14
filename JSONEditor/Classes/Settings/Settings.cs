@@ -12,6 +12,7 @@ namespace JSONEditor.Classes.Settings
         public WindowSize WindowSize { get; set; }
         public int SplitterDistance { get; set; }
         public bool Maximized { get; set; }
+        public string LastReadFolder { get; set; }
     }
 
     public class WindowPosition
