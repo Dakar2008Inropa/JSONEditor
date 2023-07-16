@@ -12,6 +12,5 @@ namespace JSONEditor.Classes.Application
         public string Name { get; set; }
         public string FilePath { get; set; }
         public bool EditedAfterLoad { get; set; }
-        public JToken Token { get; set; }
     }
 }

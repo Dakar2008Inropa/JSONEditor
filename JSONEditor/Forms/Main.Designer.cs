@@ -34,8 +34,6 @@
             FileMenuItem = new ToolStripMenuItem();
             OpenFileMenuItem = new ToolStripMenuItem();
             OpenFolderMenuItem = new ToolStripMenuItem();
-            toolStripSeparator2 = new ToolStripSeparator();
-            toolStripMenuItem1 = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             ExitMenuItem = new ToolStripMenuItem();
             MainTreeView = new TreeView();
@@ -70,7 +68,7 @@
             // 
             // FileMenuItem
             // 
-            FileMenuItem.DropDownItems.AddRange(new ToolStripItem[] { OpenFileMenuItem, OpenFolderMenuItem, toolStripSeparator2, toolStripMenuItem1, toolStripSeparator3, ExitMenuItem });
+            FileMenuItem.DropDownItems.AddRange(new ToolStripItem[] { OpenFileMenuItem, OpenFolderMenuItem, toolStripSeparator3, ExitMenuItem });
             FileMenuItem.Name = "FileMenuItem";
             FileMenuItem.Size = new Size(41, 20);
             FileMenuItem.Text = "File";
@@ -81,7 +79,7 @@
             OpenFileMenuItem.Name = "OpenFileMenuItem";
             OpenFileMenuItem.ShortcutKeys = Keys.Control | Keys.O;
             OpenFileMenuItem.Size = new Size(242, 22);
-            OpenFileMenuItem.Text = "Open File";
+            OpenFileMenuItem.Text = "Open Files";
             OpenFileMenuItem.Click += OpenFileMenuItem_Click;
             // 
             // OpenFolderMenuItem
@@ -92,19 +90,6 @@
             OpenFolderMenuItem.Size = new Size(242, 22);
             OpenFolderMenuItem.Text = "Open Folder";
             OpenFolderMenuItem.Click += OpenFolderMenuItem_Click;
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(239, 6);
-            // 
-            // toolStripMenuItem1
-            // 
-            toolStripMenuItem1.Image = Properties.Resources.Custom_Icon_Design_Pretty_Office_7_Save_48;
-            toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.ShortcutKeys = Keys.Control | Keys.Shift | Keys.S;
-            toolStripMenuItem1.Size = new Size(242, 22);
-            toolStripMenuItem1.Text = "Save All";
             // 
             // toolStripSeparator3
             // 
@@ -118,6 +103,7 @@
             ExitMenuItem.ShortcutKeys = Keys.Control | Keys.F4;
             ExitMenuItem.Size = new Size(242, 22);
             ExitMenuItem.Text = "Exit";
+            ExitMenuItem.Click += ExitMenuItem_Click;
             // 
             // MainTreeView
             // 
@@ -127,7 +113,7 @@
             MainTreeView.Dock = DockStyle.Fill;
             MainTreeView.Location = new Point(0, 0);
             MainTreeView.Name = "MainTreeView";
-            MainTreeView.Size = new Size(575, 354);
+            MainTreeView.Size = new Size(575, 273);
             MainTreeView.TabIndex = 0;
             MainTreeView.AfterLabelEdit += MainTreeView_AfterLabelEdit;
             MainTreeView.NodeMouseDoubleClick += MainTreeView_NodeMouseDoubleClick;
@@ -168,8 +154,9 @@
             MultiFileTreeView.Location = new Point(0, 0);
             MultiFileTreeView.Name = "MultiFileTreeView";
             MultiFileTreeView.SelectedImageIndex = 0;
-            MultiFileTreeView.Size = new Size(200, 354);
+            MultiFileTreeView.Size = new Size(200, 273);
             MultiFileTreeView.TabIndex = 0;
+            MultiFileTreeView.BeforeSelect += MultiFileTreeView_BeforeSelect;
             MultiFileTreeView.NodeMouseDoubleClick += MultiFileTreeView_NodeMouseDoubleClick;
             // 
             // MultiFileTreeViewContextMenu
@@ -194,6 +181,7 @@
             MultiFileTreeViewImgList.TransparentColor = Color.Transparent;
             MultiFileTreeViewImgList.Images.SetKeyName(0, "Custom-Icon-Design-Flatastic-1-Document.48.png");
             MultiFileTreeViewImgList.Images.SetKeyName(1, "Custom-Icon-Design-Flatastic-1-Folder.48.png");
+            MultiFileTreeViewImgList.Images.SetKeyName(2, "Oxygen-Icons.org-Oxygen-Places-folder-red.48.png");
             // 
             // splitContainer1
             // 
@@ -210,7 +198,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(MainTreeView);
-            splitContainer1.Size = new Size(781, 354);
+            splitContainer1.Size = new Size(781, 273);
             splitContainer1.SplitterDistance = 200;
             splitContainer1.SplitterWidth = 6;
             splitContainer1.TabIndex = 3;
@@ -220,7 +208,7 @@
             AutoScaleDimensions = new SizeF(8F, 16F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Gainsboro;
-            ClientSize = new Size(799, 397);
+            ClientSize = new Size(799, 316);
             Controls.Add(splitContainer1);
             Controls.Add(MainMenu);
             Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
@@ -251,11 +239,9 @@
         private ToolStripMenuItem OpenFileMenuItem;
         private ToolStripMenuItem OpenFolderMenuItem;
         private ToolStripMenuItem ExitMenuItem;
-        private ToolStripSeparator toolStripSeparator2;
         private TreeView MainTreeView;
         private TreeView MultiFileTreeView;
         private ToolStripSeparator toolStripSeparator3;
-        private ToolStripMenuItem toolStripMenuItem1;
         private ImageList MultiFileTreeViewImgList;
         private ContextMenuStrip MainTreeContextMenu;
         private ContextMenuStrip MultiFileTreeViewContextMenu;
