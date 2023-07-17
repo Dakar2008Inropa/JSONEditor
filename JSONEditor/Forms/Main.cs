@@ -12,6 +12,8 @@ namespace JSONEditor
 
         private JToken LoadedToken { get; set; }
 
+        private JToken LoadedUnEditedToken { get; set; }
+
         private bool IsNodeEdited { get; set; }
 
         private TreeNode lastEditedNode { get; set; }
@@ -22,6 +24,7 @@ namespace JSONEditor
             JsonFileList = new List<FileList>();
             IsNodeEdited = false;
             lastEditedNode = null;
+            LoadedUnEditedToken = null;
             InitializeComponent();
         }
 
@@ -860,7 +863,11 @@ namespace JSONEditor
             if (selectedNode != null)
             {
                 LoadedToken = JsonHelper.LoadJsonData(selectedNode.FilePath);
+                LoadedUnEditedToken = JsonHelper.LoadJsonData(selectedNode.FilePath);
                 DisplayTreeView(LoadedToken, selectedNode.Name);
+                MainTreeView.Nodes[0].Expand();
+                MainTreeView.SelectedNode = MainTreeView.Nodes[0];
+                MainTreeView.Focus();
             }
         }
 
@@ -939,6 +946,79 @@ namespace JSONEditor
         private void ExitMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void CompareJTokensAndNotify(JToken originalToken, JToken editedToken)
+        {
+            if (!JToken.DeepEquals(originalToken, editedToken))
+            {
+                WriteToSelectedNode();
+            }
+        }
+
+        private void DuplicateNodeAndJToken(TreeNode originalNode)
+        {
+            // Clone the Tree Node
+            TreeNode clonedNode = (TreeNode)originalNode.Clone();
+            //if text on originalNode is a number, increase this by 1
+            if (int.TryParse(originalNode.Text, out int result))
+            {
+                clonedNode.Text = (result + 1).ToString();
+            }
+            else
+            {
+                clonedNode.Text = originalNode.Text + " (copy)";
+            }
+            originalNode.Parent.Nodes.Add(clonedNode);
+
+            // Clone the JToken
+            TreeNodeTagClass originalNodeTag = (TreeNodeTagClass)originalNode.Tag;
+
+            JToken originalToken = (JToken)originalNodeTag.JsonObject;
+            JToken clonedToken = originalToken.DeepClone();
+
+            // Get the parent JToken
+
+            TreeNodeTagClassParent parentNodeTag = originalNodeTag.Parent;
+
+            JToken parentToken = (JToken)parentNodeTag.JsonObject;
+
+            // Add the cloned JToken to the parent
+            if (parentToken.Type == JTokenType.Array)
+            {
+                ((JArray)parentToken).Add(clonedToken);
+            }
+            else if (parentToken.Type == JTokenType.Object)
+            {
+                ((JObject)parentToken).Add(originalToken.Path.Split('.').Last(), clonedToken);
+            }
+
+            // Update the tag for the cloned node
+            clonedNode.Tag = clonedToken;
+
+            CompareJTokensAndNotify(LoadedUnEditedToken, LoadedToken);
+        }
+
+        private void MainTreeDuplicateNodeMenuItem_Click(object sender, EventArgs e)
+        {
+            TreeNode selectedNode = MainTreeView.SelectedNode;
+            if (selectedNode != null && selectedNode.Level > 0)
+            {
+                DuplicateNodeAndJToken(selectedNode);
+            }
+        }
+
+        private void MultiFileTreeView_KeyDown(object sender, KeyEventArgs e)
+        {
+            TreeNode selectedNode = MultiFileTreeView.SelectedNode;
+            if (selectedNode != null && selectedNode.Level > 0)
+            {
+                FileList selectedNodeTag = selectedNode.Tag as FileList;
+                if (selectedNodeTag != null && e.KeyCode == Keys.Enter)
+                {
+                    MultiFileTreeView_NodeMouseDoubleClick(sender, new TreeNodeMouseClickEventArgs(selectedNode, MouseButtons.Left, 2, 0, 0));
+                }
+            }
         }
     }
 }
