@@ -1001,10 +1001,13 @@ namespace JSONEditor
 
         private void MainTreeDuplicateNodeMenuItem_Click(object sender, EventArgs e)
         {
-            TreeNode selectedNode = MainTreeView.SelectedNode;
-            if (selectedNode != null && selectedNode.Level > 0)
+            if (MessageBox.Show("Are you sure you want to duplicate this node?", "Duplicate?", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
-                DuplicateNodeAndJToken(selectedNode);
+                TreeNode selectedNode = MainTreeView.SelectedNode;
+                if (selectedNode != null && selectedNode.Level > 0)
+                {
+                    DuplicateNodeAndJToken(selectedNode);
+                }
             }
         }
 
