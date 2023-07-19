@@ -11,24 +11,31 @@ namespace JSONEditor.Classes.Tools
 {
     public static class Helper
     {
-        public static string ToSpacedName(this string Name)
+        public static string ToSpacedName(this string Name, bool activate)
         {
-            StringBuilder sb = new StringBuilder();
-            char previous = '.';
-            for (int i = 0; i < Name.Length; i++)
+            if (activate)
             {
-                if (i != 0 && char.IsUpper(Name[i]) || char.IsDigit(Name[i]) && !char.IsDigit(previous))
+                StringBuilder sb = new StringBuilder();
+                char previous = '.';
+                for (int i = 0; i < Name.Length; i++)
                 {
-                    sb.Append(" " + Name[i]);
-                    previous = Name[i];
+                    if (i != 0 && char.IsUpper(Name[i]) || char.IsDigit(Name[i]) && !char.IsDigit(previous))
+                    {
+                        sb.Append(" " + Name[i]);
+                        previous = Name[i];
+                    }
+                    else
+                    {
+                        sb.Append(Name[i]);
+                        previous = Name[i];
+                    }
                 }
-                else
-                {
-                    sb.Append(Name[i]);
-                    previous = Name[i];
-                }
+                return sb.ToString();
             }
-            return sb.ToString();
+            else
+            {
+                return Name;
+            }
         }
 
         public static bool EmptyObject(this JProperty property)

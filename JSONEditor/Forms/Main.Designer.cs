@@ -36,6 +36,8 @@
             OpenFolderMenuItem = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             ExitMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem1 = new ToolStripMenuItem();
+            SettingsSpacedLabelsMenuItem = new ToolStripMenuItem();
             MainTreeView = new TreeView();
             MainTreeContextMenu = new ContextMenuStrip(components);
             MainTree_CollapseAllMenuItem = new ToolStripMenuItem();
@@ -62,7 +64,7 @@
             // 
             MainMenu.BackColor = Color.Gainsboro;
             MainMenu.Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
-            MainMenu.Items.AddRange(new ToolStripItem[] { FileMenuItem });
+            MainMenu.Items.AddRange(new ToolStripItem[] { FileMenuItem, toolStripMenuItem1 });
             MainMenu.Location = new Point(0, 0);
             MainMenu.Margin = new Padding(0, 0, 0, 10);
             MainMenu.Name = "MainMenu";
@@ -108,6 +110,20 @@
             ExitMenuItem.Size = new Size(242, 22);
             ExitMenuItem.Text = "Exit";
             ExitMenuItem.Click += ExitMenuItem_Click;
+            // 
+            // toolStripMenuItem1
+            // 
+            toolStripMenuItem1.DropDownItems.AddRange(new ToolStripItem[] { SettingsSpacedLabelsMenuItem });
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new Size(74, 20);
+            toolStripMenuItem1.Text = "Settings";
+            // 
+            // SettingsSpacedLabelsMenuItem
+            // 
+            SettingsSpacedLabelsMenuItem.Name = "SettingsSpacedLabelsMenuItem";
+            SettingsSpacedLabelsMenuItem.Size = new Size(180, 22);
+            SettingsSpacedLabelsMenuItem.Text = "Spaced Labels";
+            SettingsSpacedLabelsMenuItem.Click += SettingsSpacedLabelsMenuItem_Click;
             // 
             // MainTreeView
             // 
@@ -285,5 +301,7 @@
         private ToolStripMenuItem MainTreeDuplicateNodeMenuItem;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripMenuItem MainTreeSearchMenuItem;
+        private ToolStripMenuItem toolStripMenuItem1;
+        private ToolStripMenuItem SettingsSpacedLabelsMenuItem;
     }
 }

@@ -34,6 +34,7 @@ namespace JSONEditor
         private void Main_Load(object sender, EventArgs e)
         {
             SetWindowPositionAndSize();
+            SetSettingsValues();
         }
 
         private void SetWindowPositionAndSize()
@@ -45,6 +46,11 @@ namespace JSONEditor
             Location = new Point(AppSettings.WindowPosition.X, AppSettings.WindowPosition.Y);
             Size = new Size(AppSettings.WindowSize.Width, AppSettings.WindowSize.Height);
             splitContainer1.SplitterDistance = AppSettings.SplitterDistance;
+        }
+
+        private void SetSettingsValues()
+        {
+            SettingsSpacedLabelsMenuItem.Checked = AppSettings.SpacedLabels;
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -101,31 +107,6 @@ namespace JSONEditor
             return nodes.ToArray();
         }
 
-        private static bool IsJsonFileEmpty(string filePath)
-        {
-            string content = File.ReadAllText(filePath);
-
-            // Check if file content is null or empty
-            if (string.IsNullOrEmpty(content))
-            {
-                return true;
-            }
-
-            try
-            {
-                // Try to parse the JSON content
-                var parsedJson = JsonConvert.DeserializeObject(content);
-
-                // If parsedJson is null, that means the file was empty or contained "null"
-                return parsedJson == null;
-            }
-            catch (JsonReaderException)
-            {
-                // If parsing fails, that means the file was empty or contained invalid JSON
-                return true;
-            }
-        }
-
         private static bool DirectoryContainsFile(DirectoryInfo directory, string fileFilter)
         {
             // Check if the current directory contains the file
@@ -162,6 +143,7 @@ namespace JSONEditor
                 AppSettings.Maximized = false;
             }
             AppSettings.SplitterDistance = splitContainer1.SplitterDistance;
+            AppSettings.SpacedLabels = SettingsSpacedLabelsMenuItem.Checked;
             SettingsHelper.Save(AppSettings);
         }
 
@@ -311,7 +293,7 @@ namespace JSONEditor
             };
             foreach (var property in obj.Properties())
             {
-                var currentPropertyName = property.Name.ToSpacedName();
+                var currentPropertyName = property.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked);
                 if (IsEndValue(property))
                 {
                     if (property.Children().FirstOrDefault().Type == JTokenType.Float)
@@ -353,7 +335,7 @@ namespace JSONEditor
                     {
                         if (propertynameList.Contains(property.Name))
                         {
-                            childNode = inTreeNode.Nodes[inTreeNode.Nodes.Add(new TreeNode(property.Name.ToSpacedName()))];
+                            childNode = inTreeNode.Nodes[inTreeNode.Nodes.Add(new TreeNode(property.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)))];
                         }
                         else
                         {
@@ -448,12 +430,12 @@ namespace JSONEditor
                                     var oldvalue = node.Text;
                                     if (this.MainTreeView.SelectedNode.Text == "True")
                                     {
-                                        node.Text = $"{JPropNode.Name.ToSpacedName()}: False";
+                                        node.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: False";
                                         JPropNode.Value = false;
                                     }
                                     else
                                     {
-                                        node.Text = $"{JPropNode.Name.ToSpacedName()}: True";
+                                        node.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: True";
                                         JPropNode.Value = true;
                                     }
                                     if (node.Text != oldvalue)
@@ -535,7 +517,7 @@ namespace JSONEditor
 
             if (JPropNode != null)
             {
-                string oldvalue = $"{JPropNode.Name.ToSpacedName()}: {JPropNode.Value}";
+                string oldvalue = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {JPropNode.Value}";
                 object oldJPropValue = null;
                 e.CancelEdit = true;
                 string label = e.Label;
@@ -554,7 +536,7 @@ namespace JSONEditor
                         if (float.TryParse(label, out floatvalue))
                         {
                             result = floatvalue.ToString().Replace(',', '.');
-                            node.Text = $"{JPropNode.Name.ToSpacedName()}: {result.ToTrimmedString()}";
+                            node.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {result.ToTrimmedString()}";
                             JPropNode.Value = floatvalue;
                         }
                         else
@@ -569,7 +551,7 @@ namespace JSONEditor
                         if (int.TryParse(label, out intvalue))
                         {
                             result = intvalue.ToString();
-                            node.Text = $"{JPropNode.Name.ToSpacedName()}: {result.ToTrimmedString()}";
+                            node.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {result.ToTrimmedString()}";
                             JPropNode.Value = intvalue;
                         }
                         else
@@ -580,7 +562,7 @@ namespace JSONEditor
                     else
                     {
                         oldJPropValue = (string)JPropNode.Value;
-                        node.Text = $"{JPropNode.Name.ToSpacedName()}: {label}";
+                        node.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {label}";
                         JPropNode.Value = label;
                     }
                     if (!UseOldValue && oldvalue != node.Text)
@@ -675,7 +657,7 @@ namespace JSONEditor
                                 float value = Convert.ToSingle(JPropNode.Value);
                                 value *= 2;
                                 JPropNode.Value = value;
-                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode();
                             }
@@ -684,7 +666,7 @@ namespace JSONEditor
                                 int value = (int)JPropNode.Value;
                                 value *= 2;
                                 JPropNode.Value = value;
-                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode();
                             }
@@ -727,7 +709,7 @@ namespace JSONEditor
                                 float value = Convert.ToSingle(JPropNode.Value);
                                 value /= 2;
                                 JPropNode.Value = value;
-                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode();
                             }
@@ -736,7 +718,7 @@ namespace JSONEditor
                                 int value = (int)JPropNode.Value;
                                 value /= 2;
                                 JPropNode.Value = value;
-                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode();
                             }
@@ -778,7 +760,7 @@ namespace JSONEditor
                                 float value = Convert.ToSingle(JPropNode.Value);
                                 value += 5;
                                 JPropNode.Value = value;
-                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode();
                             }
@@ -787,7 +769,7 @@ namespace JSONEditor
                                 int value = (int)JPropNode.Value;
                                 value += 5;
                                 JPropNode.Value = value;
-                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode();
                             }
@@ -829,7 +811,7 @@ namespace JSONEditor
                                 float value = Convert.ToSingle(JPropNode.Value);
                                 value -= 5;
                                 JPropNode.Value = value;
-                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode();
                             }
@@ -838,7 +820,7 @@ namespace JSONEditor
                                 int value = (int)JPropNode.Value;
                                 value -= 5;
                                 JPropNode.Value = value;
-                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
+                                selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                                 WriteToSelectedNode();
                             }
@@ -886,7 +868,7 @@ namespace JSONEditor
                             {
                                 JPropToken.FirstOrDefault().Replace(JPropToken.FirstOrDefault().Value<int>() * -1);
                             }
-                            selectedNode.Text = $"{JProp.Name.ToSpacedName()}: {JPropToken.FirstOrDefault().Value<string>()}";
+                            selectedNode.Text = $"{JProp.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {JPropToken.FirstOrDefault().Value<string>()}";
                             if (selectedNode.Text != oldvalue)
                             {
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
@@ -920,7 +902,7 @@ namespace JSONEditor
                 LoadedUnEditedToken = JsonHelper.LoadJsonData(selectedNode.FilePath);
                 if (TokenIsEmpty(LoadedToken))
                 {
-                    if(MessageBox.Show($"JSON file is empty or invalid and can't be opened here, do you wish to remove the file from the treeview?", "Error reading file", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+                    if (MessageBox.Show($"JSON file is empty or invalid and can't be opened here, do you wish to remove the file from the treeview?", "Error reading file", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                     {
                         e.Node.Remove();
                     }
@@ -1029,7 +1011,7 @@ namespace JSONEditor
             }
             else
             {
-                clonedNode.Text = originalNode.Text + " (copy)";
+                clonedNode.Text = originalNode.Text;
             }
             originalNode.Parent.Nodes.Add(clonedNode);
 
@@ -1052,7 +1034,7 @@ namespace JSONEditor
             }
             else if (parentToken.Type == JTokenType.Object)
             {
-                ((JObject)parentToken).Add(originalToken.Path.Split('.').Last(), clonedToken);
+                ((JObject)parentToken).Add(originalToken.Path.Split('.')[^1], clonedToken);
             }
 
             // Update the tag for the cloned node
@@ -1083,6 +1065,18 @@ namespace JSONEditor
                 {
                     MultiFileTreeView_NodeMouseDoubleClick(sender, new TreeNodeMouseClickEventArgs(selectedNode, MouseButtons.Left, 2, 0, 0));
                 }
+            }
+        }
+
+        private void SettingsSpacedLabelsMenuItem_Click(object sender, EventArgs e)
+        {
+            if (SettingsSpacedLabelsMenuItem.Checked)
+            {
+                SettingsSpacedLabelsMenuItem.Checked = false;
+            }
+            else
+            {
+                SettingsSpacedLabelsMenuItem.Checked = true;
             }
         }
     }
