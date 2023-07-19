@@ -6,11 +6,11 @@
     <Nullable>disable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>Pictogrammers-Material-Code-json.ico</ApplicationIcon>
+    <ApplicationIcon>Papirus-Team-Papirus-Mimetypes-App-json.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Pictogrammers-Material-Code-json.ico" />
+    <Content Include="Papirus-Team-Papirus-Mimetypes-App-json.ico" />
   </ItemGroup>
 
   <ItemGroup>

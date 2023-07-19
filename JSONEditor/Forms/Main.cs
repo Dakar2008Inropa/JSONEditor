@@ -1,6 +1,9 @@
 using JSONEditor.Classes.Application;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using static System.ComponentModel.Design.ObjectSelectorEditor;
 
 namespace JSONEditor
 {
@@ -76,8 +79,12 @@ namespace JSONEditor
             {
                 foreach (var directory in directoryInfo.GetDirectories())
                 {
-                    nodes.Add(new TreeNode(directory.Name, 1, 1, GetDirectoryNodes(directory, fileFilter, mainform)));
-                    mainform.Text = $"Inropa JSON Editor - Loading Data - {directory.Name}";
+                    if (DirectoryContainsFile(directory, fileFilter))
+                    {
+                        var subNodes = GetDirectoryNodes(directory, fileFilter, mainform);
+                        nodes.Add(new TreeNode(directory.Name, 1, 1, subNodes));
+                        mainform.Text = $"Inropa JSON Editor - Loading Data - {directory.Name}";
+                    }
                 }
                 foreach (var file in directoryInfo.GetFiles(fileFilter))
                 {
@@ -92,6 +99,52 @@ namespace JSONEditor
                 }
             });
             return nodes.ToArray();
+        }
+
+        private static bool IsJsonFileEmpty(string filePath)
+        {
+            string content = File.ReadAllText(filePath);
+
+            // Check if file content is null or empty
+            if (string.IsNullOrEmpty(content))
+            {
+                return true;
+            }
+
+            try
+            {
+                // Try to parse the JSON content
+                var parsedJson = JsonConvert.DeserializeObject(content);
+
+                // If parsedJson is null, that means the file was empty or contained "null"
+                return parsedJson == null;
+            }
+            catch (JsonReaderException)
+            {
+                // If parsing fails, that means the file was empty or contained invalid JSON
+                return true;
+            }
+        }
+
+        private static bool DirectoryContainsFile(DirectoryInfo directory, string fileFilter)
+        {
+            // Check if the current directory contains the file
+            if (directory.GetFiles(fileFilter).Length > 0)
+            {
+                return true;
+            }
+
+            // Recursively check if any of the subdirectories contain the file
+            foreach (var subDirectory in directory.GetDirectories())
+            {
+                if (DirectoryContainsFile(subDirectory, fileFilter))
+                {
+                    return true;
+                }
+            }
+
+            // If no file was found in this directory or any subdirectory, return false
+            return false;
         }
 
         private void SaveSettings()
@@ -164,6 +217,7 @@ namespace JSONEditor
                 }
             }
             MultiFileTreeView.EndUpdate();
+            MultiFileTreeView.Nodes[0].Expand();
         }
 
         private void DisplayTreeView(JToken root, string rootName)
@@ -864,6 +918,14 @@ namespace JSONEditor
             {
                 LoadedToken = JsonHelper.LoadJsonData(selectedNode.FilePath);
                 LoadedUnEditedToken = JsonHelper.LoadJsonData(selectedNode.FilePath);
+                if (TokenIsEmpty(LoadedToken))
+                {
+                    if(MessageBox.Show($"JSON file is empty or invalid and can't be opened here, do you wish to remove the file from the treeview?", "Error reading file", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+                    {
+                        e.Node.Remove();
+                    }
+                    return;
+                }
                 DisplayTreeView(LoadedToken, selectedNode.Name);
                 MainTreeView.Nodes[0].Expand();
                 MainTreeView.SelectedNode = MainTreeView.Nodes[0];
