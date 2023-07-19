@@ -1,10 +1,6 @@
 using JSONEditor.Classes.Application;
-using JSONEditor.Classes.Tools;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
-using System.Formats.Asn1;
-using System.IO;
 
 namespace JSONEditor
 {
@@ -14,15 +10,21 @@ namespace JSONEditor
 
         private List<FileList> JsonFileList { get; set; }
 
-        private List<FolderList> JsonFolders { get; set; }
-
         private JToken LoadedToken { get; set; }
+
+        private JToken LoadedUnEditedToken { get; set; }
+
+        private bool IsNodeEdited { get; set; }
+
+        private TreeNode lastEditedNode { get; set; }
 
         public Main()
         {
             AppSettings = SettingsHelper.Load();
             JsonFileList = new List<FileList>();
-            JsonFolders = new List<FolderList>();
+            IsNodeEdited = false;
+            lastEditedNode = null;
+            LoadedUnEditedToken = null;
             InitializeComponent();
         }
 
@@ -44,7 +46,52 @@ namespace JSONEditor
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (IsNodeEdited)
+            {
+                var selectedNode = lastEditedNode;
+                FileList selectedFileList = selectedNode.Tag as FileList;
+                var result = MessageBox.Show($"You have unsaved changes to {selectedNode.Text}\nDo you want to save them?", "Save changes?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes || result == DialogResult.No)
+                {
+                    if (result == DialogResult.Yes)
+                    {
+                        JsonHelper.WriteToJsonFile(LoadedToken, selectedFileList.FilePath);
+                    }
+                    selectedFileList.EditedAfterLoad = false;
+                    IsNodeEdited = false;
+                    selectedNode.ForeColor = Color.Black;
+                }
+                else if (result == DialogResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
             SaveSettings();
+        }
+
+        private static TreeNode[] GetDirectoryNodes(DirectoryInfo directoryInfo, string fileFilter, Form mainform)
+        {
+            var nodes = new List<TreeNode>();
+            mainform.Invoke((MethodInvoker)delegate
+            {
+                foreach (var directory in directoryInfo.GetDirectories())
+                {
+                    nodes.Add(new TreeNode(directory.Name, 1, 1, GetDirectoryNodes(directory, fileFilter, mainform)));
+                    mainform.Text = $"Inropa JSON Editor - Loading Data - {directory.Name}";
+                }
+                foreach (var file in directoryInfo.GetFiles(fileFilter))
+                {
+                    TreeNode fileNode = new TreeNode(file.Name, 0, 0);
+                    FileList jsonFile = new FileList();
+                    jsonFile.Name = file.Name;
+                    jsonFile.FilePath = file.FullName;
+                    mainform.Text = $"Inropa JSON Editor - Loading Data - {jsonFile.Name}";
+                    fileNode.Tag = jsonFile;
+
+                    nodes.Add(fileNode);
+                }
+            });
+            return nodes.ToArray();
         }
 
         private void SaveSettings()
@@ -69,33 +116,43 @@ namespace JSONEditor
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "JSON Files (*.json)|*.json";
-            ofd.Multiselect = false;
+            ofd.Multiselect = true;
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 JsonFileList.Clear();
-                JsonFileList.Add(new FileList() { Name = Path.GetFileNameWithoutExtension(ofd.FileName), FilePath = ofd.FileName, Token = JsonHelper.LoadJsonData(ofd.FileName) });
-                UpdateFileTreeView();
+                foreach (var file in ofd.FileNames)
+                {
+                    FileList flist = new FileList();
+                    flist.Name = Path.GetFileNameWithoutExtension(file);
+                    flist.FilePath = file;
+                    JsonFileList.Add(flist);
+                }
+                UpdateFileTreeView(null, null);
             }
         }
 
-        private void UpdateFileTreeView(bool FolderStructure = false)
+        private async void UpdateFileTreeView(string root, string fileFilter, bool FolderStructure = false)
         {
             MultiFileTreeView.Nodes.Clear();
             MultiFileTreeView.BeginUpdate();
-            if (FolderStructure)
+            if (FolderStructure && !string.IsNullOrEmpty(root) && !string.IsNullOrEmpty(fileFilter))
             {
-                foreach (FolderList folder in JsonFolders)
+                var rootDirInfo = new DirectoryInfo(root);
+                await Task.Run(() =>
                 {
-                    TreeNode tNode = new TreeNode();
-                    tNode = MultiFileTreeView.Nodes[MultiFileTreeView.Nodes.Add(new TreeNode(folder.Name, 1, 1))];
-                    tNode.Tag = folder;
-                    foreach (FileList file in folder.Files)
+                    this.Invoke((MethodInvoker)delegate
                     {
-                        TreeNode fNode = new TreeNode();
-                        fNode = tNode.Nodes[tNode.Nodes.Add(new TreeNode(file.Name, 0, 0))];
-                        fNode.Tag = file;
-                    }
-                }
+                        FileMenuItem.Enabled = false;
+                        this.Text = "Inropa JSON Editor - Loading Data...";
+                    });
+                    TreeNode[] Nodes = GetDirectoryNodes(rootDirInfo, fileFilter, this);
+                    MultiFileTreeView.Invoke(new Action(() =>
+                    {
+                        MultiFileTreeView.Nodes.Add(new TreeNode(rootDirInfo.Name, 2, 2, Nodes));
+                    }));
+                });
+                this.Text = "Inropa JSON Editor";
+                FileMenuItem.Enabled = true;
             }
             else
             {
@@ -349,7 +406,7 @@ namespace JSONEditor
                                     {
                                         ColorizeEditedNode(node, Color.DarkOrange, Color.Black);
                                     }
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                             }
                             else
@@ -475,7 +532,7 @@ namespace JSONEditor
                     if (!UseOldValue && oldvalue != node.Text)
                     {
                         ColorizeEditedNode(node, Color.DarkOrange, Color.Black);
-                        WriteToSelectedNode(LoadedToken);
+                        WriteToSelectedNode();
                     }
                 }
                 if (UseOldValue)
@@ -536,7 +593,7 @@ namespace JSONEditor
                         JsonValue.Value = e.Label;
                     }
                     ColorizeEditedNode(node, Color.DarkOrange, Color.Black);
-                    WriteToSelectedNode(LoadedToken);
+                    WriteToSelectedNode();
                 }
             }
         }
@@ -544,13 +601,13 @@ namespace JSONEditor
         private void MainTreeView_KeyDown(object sender, KeyEventArgs e)
         {
             TreeNode selectedNode = MainTreeView.SelectedNode;
-            if (selectedNode != null && selectedNode.Level > 1)
+            if (selectedNode != null && selectedNode.Level > 0)
             {
                 if (e.KeyCode == Keys.Enter)
                 {
                     MainTreeView_NodeMouseDoubleClick(MainTreeView, new TreeNodeMouseClickEventArgs(selectedNode, MouseButtons.Left, 2, 0, 0));
                 }
-                if((ModifierKeys & Keys.Control) == Keys.Control)
+                if ((ModifierKeys & Keys.Control) == Keys.Control)
                 {
                     if (e.KeyCode == Keys.Multiply)
                     {
@@ -566,7 +623,7 @@ namespace JSONEditor
                                 JPropNode.Value = value;
                                 selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                WriteToSelectedNode();
                             }
                             else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
                             {
@@ -575,7 +632,7 @@ namespace JSONEditor
                                 JPropNode.Value = value;
                                 selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                WriteToSelectedNode();
                             }
                         }
                         else
@@ -590,7 +647,7 @@ namespace JSONEditor
                                     JsonValue.Value = value;
                                     selectedNode.Text = value.ToString();
                                     ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                                 else if (JsonValue.Type == JTokenType.Float)
                                 {
@@ -599,7 +656,7 @@ namespace JSONEditor
                                     JsonValue.Value = value;
                                     selectedNode.Text = value.ToString();
                                     ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                             }
                         }
@@ -618,7 +675,7 @@ namespace JSONEditor
                                 JPropNode.Value = value;
                                 selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                WriteToSelectedNode();
                             }
                             else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
                             {
@@ -627,7 +684,7 @@ namespace JSONEditor
                                 JPropNode.Value = value;
                                 selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                WriteToSelectedNode();
                             }
                         }
                         else
@@ -642,7 +699,7 @@ namespace JSONEditor
                                     JsonValue.Value = value;
                                     selectedNode.Text = value.ToString();
                                     ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                                 else if (JsonValue.Type == JTokenType.Float)
                                 {
@@ -651,7 +708,7 @@ namespace JSONEditor
                                     JsonValue.Value = value;
                                     selectedNode.Text = value.ToString();
                                     ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                             }
                         }
@@ -669,7 +726,7 @@ namespace JSONEditor
                                 JPropNode.Value = value;
                                 selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                WriteToSelectedNode();
                             }
                             else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
                             {
@@ -678,7 +735,7 @@ namespace JSONEditor
                                 JPropNode.Value = value;
                                 selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                WriteToSelectedNode();
                             }
                         }
                         else
@@ -693,7 +750,7 @@ namespace JSONEditor
                                     JsonValue.Value = value;
                                     selectedNode.Text = value.ToString();
                                     ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                                 else if (JsonValue.Type == JTokenType.Float)
                                 {
@@ -702,7 +759,7 @@ namespace JSONEditor
                                     JsonValue.Value = value;
                                     selectedNode.Text = value.ToString();
                                     ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                             }
                         }
@@ -720,7 +777,7 @@ namespace JSONEditor
                                 JPropNode.Value = value;
                                 selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                WriteToSelectedNode();
                             }
                             else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
                             {
@@ -729,7 +786,7 @@ namespace JSONEditor
                                 JPropNode.Value = value;
                                 selectedNode.Text = $"{JPropNode.Name.ToSpacedName()}: {value.ToTrimmedString()}";
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                WriteToSelectedNode(LoadedToken);
+                                WriteToSelectedNode();
                             }
                         }
                         else
@@ -744,7 +801,7 @@ namespace JSONEditor
                                     JsonValue.Value = value;
                                     selectedNode.Text = value.ToString();
                                     ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                                 else if (JsonValue.Type == JTokenType.Float)
                                 {
@@ -753,7 +810,7 @@ namespace JSONEditor
                                     JsonValue.Value = value;
                                     selectedNode.Text = value.ToString();
                                     ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
-                                    WriteToSelectedNode(LoadedToken);
+                                    WriteToSelectedNode();
                                 }
                             }
                         }
@@ -780,21 +837,22 @@ namespace JSONEditor
                             {
                                 ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
                             }
-                            WriteToSelectedNode(LoadedToken);
+                            WriteToSelectedNode();
                         }
                     }
                 }
             }
         }
 
-        private void WriteToSelectedNode(JToken root)
+        private void WriteToSelectedNode()
         {
             TreeNode selectedNode = MultiFileTreeView.SelectedNode;
             if (selectedNode != null)
             {
                 FileList selectedItem = selectedNode.Tag as FileList;
                 selectedItem.EditedAfterLoad = true;
-                selectedItem.Token = root;
+                IsNodeEdited = true;
+                lastEditedNode = selectedNode;
                 selectedNode.ForeColor = Color.Red;
             }
         }
@@ -802,10 +860,14 @@ namespace JSONEditor
         private void MultiFileTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             FileList selectedNode = e.Node.Tag as FileList;
-            if (selectedNode != null && selectedNode.Token != null)
+            if (selectedNode != null)
             {
-                LoadedToken = selectedNode.Token;
+                LoadedToken = JsonHelper.LoadJsonData(selectedNode.FilePath);
+                LoadedUnEditedToken = JsonHelper.LoadJsonData(selectedNode.FilePath);
                 DisplayTreeView(LoadedToken, selectedNode.Name);
+                MainTreeView.Nodes[0].Expand();
+                MainTreeView.SelectedNode = MainTreeView.Nodes[0];
+                MainTreeView.Focus();
             }
         }
 
@@ -824,8 +886,10 @@ namespace JSONEditor
         {
             var selectedNode = MultiFileTreeView.SelectedNode;
             FileList selectedFileList = selectedNode.Tag as FileList;
-            JsonHelper.WriteToJsonFile(selectedFileList.Token, selectedFileList.FilePath);
-            selectedNode.NodeFont = new Font("Verdana", 9.75f, FontStyle.Regular);
+            JsonHelper.WriteToJsonFile(LoadedToken, selectedFileList.FilePath);
+            selectedFileList.EditedAfterLoad = false;
+            IsNodeEdited = false;
+            selectedNode.ForeColor = Color.Black;
         }
 
         private void OpenFolderMenuItem_Click(object sender, EventArgs e)
@@ -836,43 +900,128 @@ namespace JSONEditor
             fbd.ShowDialog();
             if (fbd.SelectedPath != "")
             {
-                string[] directories = Directory.GetDirectories(fbd.SelectedPath, "*", SearchOption.AllDirectories);
-                foreach (string folder in directories)
-                {
-                    string[] files = Directory.GetFiles(folder, "*.json", SearchOption.AllDirectories);
-                    if (files.Length > 0)
-                    {
-                        DirectoryInfo thisDir = new DirectoryInfo(folder);
-                        FolderList newFolder = new FolderList();
-                        newFolder.Name = thisDir.Name;
-                        newFolder.FolderPath = thisDir.FullName;
-                        List<FileList> thisFolderFiles = new List<FileList>();
-                        foreach (string file in files)
-                        {
-                            FileList fl = new FileList();
-                            fl.FilePath = file;
-                            fl.Name = Path.GetFileNameWithoutExtension(file);
-                            fl.Token = JsonHelper.LoadJsonData(file);
-                            fl.EditedAfterLoad = false;
-                            if (!TokenIsEmpty(fl.Token))
-                            {
-                                thisFolderFiles.Add(fl);
-                            }
-                        }
-                        newFolder.Files = thisFolderFiles;
-                        JsonFolders.Add(newFolder);
-                    }
-                }
-                UpdateFileTreeView(true);
+                UpdateFileTreeView(fbd.SelectedPath, "*.json", true);
             }
         }
 
         public static bool TokenIsEmpty(JToken token)
         {
-            return (token.Type == JTokenType.Array && !token.HasValues) ||
-                   (token.Type == JTokenType.Object && !token.HasValues) ||
-                   (token.Type == JTokenType.String && token.ToString() == String.Empty) ||
-                   (token.Type == JTokenType.Null);
+            if (token == null)
+            {
+                return true;
+            }
+            else
+            {
+                return (token.Type == JTokenType.Array && !token.HasValues) ||
+                       (token.Type == JTokenType.Object && !token.HasValues) ||
+                       (token.Type == JTokenType.String && token.ToString() == String.Empty) ||
+                       (token.Type == JTokenType.Null);
+            }
+        }
+
+        private void MultiFileTreeView_BeforeSelect(object sender, TreeViewCancelEventArgs e)
+        {
+            if (IsNodeEdited && e.Node != lastEditedNode)
+            {
+                var selectedNode = lastEditedNode;
+                FileList selectedFileList = selectedNode.Tag as FileList;
+                var result = MessageBox.Show($"You have unsaved changes to {selectedNode.Text}\nDo you want to save them?", "Save changes?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes || result == DialogResult.No)
+                {
+                    if (result == DialogResult.Yes)
+                    {
+                        JsonHelper.WriteToJsonFile(LoadedToken, selectedFileList.FilePath);
+                    }
+                    selectedFileList.EditedAfterLoad = false;
+                    IsNodeEdited = false;
+                    selectedNode.ForeColor = Color.Black;
+                }
+                else if (result == DialogResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+
+        private void ExitMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void CompareJTokensAndNotify(JToken originalToken, JToken editedToken)
+        {
+            if (!JToken.DeepEquals(originalToken, editedToken))
+            {
+                WriteToSelectedNode();
+            }
+        }
+
+        private void DuplicateNodeAndJToken(TreeNode originalNode)
+        {
+            // Clone the Tree Node
+            TreeNode clonedNode = (TreeNode)originalNode.Clone();
+            //if text on originalNode is a number, increase this by 1
+            if (int.TryParse(originalNode.Text, out int result))
+            {
+                clonedNode.Text = (result + 1).ToString();
+            }
+            else
+            {
+                clonedNode.Text = originalNode.Text + " (copy)";
+            }
+            originalNode.Parent.Nodes.Add(clonedNode);
+
+            // Clone the JToken
+            TreeNodeTagClass originalNodeTag = (TreeNodeTagClass)originalNode.Tag;
+
+            JToken originalToken = (JToken)originalNodeTag.JsonObject;
+            JToken clonedToken = originalToken.DeepClone();
+
+            // Get the parent JToken
+
+            TreeNodeTagClassParent parentNodeTag = originalNodeTag.Parent;
+
+            JToken parentToken = (JToken)parentNodeTag.JsonObject;
+
+            // Add the cloned JToken to the parent
+            if (parentToken.Type == JTokenType.Array)
+            {
+                ((JArray)parentToken).Add(clonedToken);
+            }
+            else if (parentToken.Type == JTokenType.Object)
+            {
+                ((JObject)parentToken).Add(originalToken.Path.Split('.').Last(), clonedToken);
+            }
+
+            // Update the tag for the cloned node
+            clonedNode.Tag = clonedToken;
+
+            CompareJTokensAndNotify(LoadedUnEditedToken, LoadedToken);
+        }
+
+        private void MainTreeDuplicateNodeMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to duplicate this node?", "Duplicate?", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+            {
+                TreeNode selectedNode = MainTreeView.SelectedNode;
+                if (selectedNode != null && selectedNode.Level > 0)
+                {
+                    DuplicateNodeAndJToken(selectedNode);
+                }
+            }
+        }
+
+        private void MultiFileTreeView_KeyDown(object sender, KeyEventArgs e)
+        {
+            TreeNode selectedNode = MultiFileTreeView.SelectedNode;
+            if (selectedNode != null && selectedNode.Level > 0)
+            {
+                FileList selectedNodeTag = selectedNode.Tag as FileList;
+                if (selectedNodeTag != null && e.KeyCode == Keys.Enter)
+                {
+                    MultiFileTreeView_NodeMouseDoubleClick(sender, new TreeNodeMouseClickEventArgs(selectedNode, MouseButtons.Left, 2, 0, 0));
+                }
+            }
         }
     }
 }

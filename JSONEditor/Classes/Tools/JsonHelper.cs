@@ -29,27 +29,35 @@ namespace JSONEditor.Classes.Tools
             return globalMutexName;
         }
 
-        public static JToken LoadJsonData(string Path)
+        public static JToken LoadJsonData(string FilePath)
         {
             JToken root = null;
-            if (File.Exists(Path))
+            try
             {
-                using (Mutex mutex = new Mutex(false, Path.GetGlobalMutexName()))
+                if (File.Exists(FilePath))
                 {
-                    try
+                    using (Mutex mutex = new Mutex(false, FilePath.GetGlobalMutexName()))
                     {
-                        mutex.WaitOne();
-                        using (var reader = new StreamReader(Path))
-                        using (var jsonReader = new JsonTextReader(reader))
+                        try
                         {
-                            root = JToken.Load(jsonReader);
+                            mutex.WaitOne();
+                            using (var reader = new StreamReader(FilePath))
+                            using (var jsonReader = new JsonTextReader(reader))
+                            {
+                                root = JToken.Load(jsonReader);
+                            }
+                        }
+                        finally
+                        {
+                            mutex.ReleaseMutex();
                         }
                     }
-                    finally
-                    {
-                        mutex.ReleaseMutex();
-                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log.Error(ex.Message);
+                Logger.Log.Error($"Following File Caused The Error: {Path.GetFileName(FilePath)}");
             }
             return root;
         }

@@ -63,6 +63,16 @@ namespace JSONEditor.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Amitjakhu_Drip_Duplicate_48 {
+            get {
+                object obj = ResourceManager.GetObject("Amitjakhu-Drip-Duplicate.48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Avosoft_Warm_Toolbar_Folder_open_48 {
             get {
                 object obj = ResourceManager.GetObject("Avosoft-Warm-Toolbar-Folder-open.48", resourceCulture);
@@ -76,6 +86,16 @@ namespace JSONEditor.Properties {
         internal static System.Drawing.Bitmap Collapse_All_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Collapse_All_16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Custom_Icon_Design_Mono_General_2_Search_48 {
+            get {
+                object obj = ResourceManager.GetObject("Custom-Icon-Design-Mono-General-2-Search.48", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -146,6 +166,16 @@ namespace JSONEditor.Properties {
         internal static System.Drawing.Bitmap Pictogrammers_Material_Expand_all_48 {
             get {
                 object obj = ResourceManager.GetObject("Pictogrammers-Material-Expand-all.48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap searchicon {
+            get {
+                object obj = ResourceManager.GetObject("searchicon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
