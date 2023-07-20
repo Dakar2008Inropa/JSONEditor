@@ -302,6 +302,7 @@ namespace JSONEditor
                         childNode = inTreeNode.Nodes[inTreeNode.Nodes.Add(new TreeNode($"{currentPropertyName}:{float.Parse(property.Value.ToTrimmedString()).ToTrimmedString().Replace(',', '.')}"))];
                         TreeNodeTagClass treeNodeTag = new TreeNodeTagClass();
                         treeNodeTag.Name = property.Name;
+                        treeNodeTag.NameSpaced = property.Name.ToSpacedName(true);
                         treeNodeTag.Path = property.Path;
                         treeNodeTag.JsonObject = property;
                         treeNodeTag.Type = property.Type.ToString();
@@ -318,6 +319,7 @@ namespace JSONEditor
                         TreeNodeTagClass treeNodeTag = new TreeNodeTagClass();
                         childNode = inTreeNode.Nodes[inTreeNode.Nodes.Add(new TreeNode($"{currentPropertyName}: {property.Value.ToString().TrimStart()}"))];
                         treeNodeTag.Name = property.Name;
+                        treeNodeTag.NameSpaced = property.Name.ToSpacedName(true);
                         treeNodeTag.Path = property.Path;
                         treeNodeTag.JsonObject = property;
                         treeNodeTag.Type = property.Type.ToString();
@@ -344,6 +346,7 @@ namespace JSONEditor
                         }
                         TreeNodeTagClass treeNodeTag = new TreeNodeTagClass();
                         treeNodeTag.Name = property.Name;
+                        treeNodeTag.NameSpaced = property.Name.ToSpacedName(true);
                         treeNodeTag.Path = property.Path;
                         treeNodeTag.JsonObject = property;
                         treeNodeTag.Type = property.Type.ToString();
@@ -1115,14 +1118,14 @@ namespace JSONEditor
             if (startNode.Tag != null)
             {
                 TreeNodeTagClass nodeTag = (TreeNodeTagClass)startNode.Tag;
-                if(!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().Contains(searchValue.ToLower()))
+                if (!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().Contains(searchValue.ToLower()))
                 {
                     HighlightNodeAndParents(startNode, backColor, foreColor);
                 }
             }
             else
             {
-                if(startNode.Text.ToLower().Contains(searchValue.ToLower()))
+                if (startNode.Text.ToLower().Contains(searchValue.ToLower()))
                 {
                     HighlightNodeAndParents(startNode, backColor, foreColor);
                 }
@@ -1147,9 +1150,303 @@ namespace JSONEditor
         private void MainTreeSearchMenuItem_Click(object sender, EventArgs e)
         {
             SearchMainTreeForm searchMainTreeForm = new SearchMainTreeForm();
-            if(searchMainTreeForm.ShowDialog() == DialogResult.OK)
+            if (searchMainTreeForm.ShowDialog() == DialogResult.OK)
             {
                 SearchAndHighlightNodes(searchMainTreeForm.SearchData, MainTreeView, Color.Yellow, Color.Black);
+            }
+        }
+
+        private void MainTreeBatchEditMenuItem_Click(object sender, EventArgs e)
+        {
+            BatchEditForm batchEditForm = new BatchEditForm();
+            if(batchEditForm.ShowDialog() == DialogResult.OK)
+            {
+                ExecuteMainTreeBatch(batchEditForm.SearchData, MainTreeView, batchEditForm.SearchMatchValue, batchEditForm.WhatToDoValue, batchEditForm.FactorValue);
+            }
+        }
+
+        private void ExecuteMainTreeBatch(string search, TreeView treeView, int searchmatchvalue, int whattodovalue, int factor)
+        {
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                RecursiveSearchAndBatchEdit(node, search, searchmatchvalue, whattodovalue, factor);
+            }
+        }
+
+        private void RecursiveSearchAndBatchEdit(TreeNode startNode, string searchValue, int searchmatchvalue, int whattodovalue, int factor)
+        {
+            if(startNode.Tag != null)
+            {
+                TreeNodeTagClass nodeTag = (TreeNodeTagClass)startNode.Tag;
+                if(searchmatchvalue == 0)
+                {
+                    if (!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().Contains(searchValue.ToLower()))
+                    {
+                        BatchEditNode(startNode, whattodovalue, factor);
+                    }
+                }
+                else if(searchmatchvalue == 1)
+                {
+                    if (!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().StartsWith(searchValue.ToLower()))
+                    {
+                        BatchEditNode(startNode, whattodovalue, factor);
+                    }
+                }
+                else if(searchmatchvalue == 2)
+                {
+                    if (!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().EndsWith(searchValue.ToLower()))
+                    {
+                        BatchEditNode(startNode, whattodovalue, factor);
+                    }
+                }
+                else if (searchmatchvalue == 3 && !string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().Equals(searchValue.ToLower()))
+                {
+                    BatchEditNode(startNode, whattodovalue, factor);
+                }
+            }
+            else
+            {
+                if (searchmatchvalue == 0)
+                {
+                    if (startNode.Text.ToLower().Contains(searchValue.ToLower()))
+                    {
+                        BatchEditNode(startNode, whattodovalue, factor);
+                    }
+                }
+                else if (searchmatchvalue == 1)
+                {
+                    if (startNode.Text.ToLower().StartsWith(searchValue.ToLower()))
+                    {
+                        BatchEditNode(startNode, whattodovalue, factor);
+                    }
+                }
+                else if (searchmatchvalue == 2)
+                {
+                    if (startNode.Text.ToLower().EndsWith(searchValue.ToLower()))
+                    {
+                        BatchEditNode(startNode, whattodovalue, factor);
+                    }
+                }
+                else if (searchmatchvalue == 3 && startNode.Text.ToLower().Equals(searchValue.ToLower()))
+                {
+                    BatchEditNode(startNode, whattodovalue, factor);
+                }
+            }
+            foreach (TreeNode node in startNode.Nodes)
+            {
+                RecursiveSearchAndBatchEdit(node, searchValue, searchmatchvalue, whattodovalue, factor);
+            }
+        }
+
+        private void BatchEditNode(TreeNode selectedNode, int whattodovalue, int factor)
+        {
+            if (whattodovalue == 0)
+            {
+                //Add
+                var JPropTag = selectedNode.Tag as TreeNodeTagClass;
+                var JPropNode = JPropTag.JsonObject as JProperty;
+                if (JPropNode != null)
+                {
+                    if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                    {
+                        float value = Convert.ToSingle(JPropNode.Value);
+                        value += factor;
+                        JPropNode.Value = value;
+                        selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
+                        ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                        WriteToSelectedNode();
+                    }
+                    else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
+                    {
+                        int value = (int)JPropNode.Value;
+                        value += factor;
+                        JPropNode.Value = value;
+                        selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
+                        ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                        WriteToSelectedNode();
+                    }
+                }
+                else
+                {
+                    var JsonValue = JPropTag.JsonObject as JValue;
+                    if (JsonValue != null)
+                    {
+                        if (JsonValue.Type == JTokenType.Integer)
+                        {
+                            int value = (int)JsonValue.Value;
+                            value += factor;
+                            JsonValue.Value = value;
+                            selectedNode.Text = value.ToString();
+                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            WriteToSelectedNode();
+                        }
+                        else if (JsonValue.Type == JTokenType.Float)
+                        {
+                            float value = Convert.ToSingle(JsonValue.Value);
+                            value += factor;
+                            JsonValue.Value = value;
+                            selectedNode.Text = value.ToString();
+                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            WriteToSelectedNode();
+                        }
+                    }
+                }
+            }
+            else if (whattodovalue == 1)
+            {
+                //Subtract
+                var JPropTag = selectedNode.Tag as TreeNodeTagClass;
+                var JPropNode = JPropTag.JsonObject as JProperty;
+                if (JPropNode != null)
+                {
+                    if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                    {
+                        float value = Convert.ToSingle(JPropNode.Value);
+                        value -= factor;
+                        JPropNode.Value = value;
+                        selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
+                        ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                        WriteToSelectedNode();
+                    }
+                    else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
+                    {
+                        int value = (int)JPropNode.Value;
+                        value -= factor;
+                        JPropNode.Value = value;
+                        selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
+                        ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                        WriteToSelectedNode();
+                    }
+                }
+                else
+                {
+                    var JsonValue = JPropTag.JsonObject as JValue;
+                    if (JsonValue != null)
+                    {
+                        if (JsonValue.Type == JTokenType.Integer)
+                        {
+                            int value = (int)JsonValue.Value;
+                            value -= factor;
+                            JsonValue.Value = value;
+                            selectedNode.Text = value.ToString();
+                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            WriteToSelectedNode();
+                        }
+                        else if (JsonValue.Type == JTokenType.Float)
+                        {
+                            float value = Convert.ToSingle(JsonValue.Value);
+                            value -= factor;
+                            JsonValue.Value = value;
+                            selectedNode.Text = value.ToString();
+                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            WriteToSelectedNode();
+                        }
+                    }
+                }
+            }
+            else if (whattodovalue == 2)
+            {
+                //Multiply
+                var JPropTag = selectedNode.Tag as TreeNodeTagClass;
+                var JPropNode = JPropTag.JsonObject as JProperty;
+                if (JPropNode != null)
+                {
+                    if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                    {
+                        float value = Convert.ToSingle(JPropNode.Value);
+                        value *= factor;
+                        JPropNode.Value = value;
+                        selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
+                        ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                        WriteToSelectedNode();
+                    }
+                    else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
+                    {
+                        int value = (int)JPropNode.Value;
+                        value *= factor;
+                        JPropNode.Value = value;
+                        selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
+                        ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                        WriteToSelectedNode();
+                    }
+                }
+                else
+                {
+                    var JsonValue = JPropTag.JsonObject as JValue;
+                    if (JsonValue != null)
+                    {
+                        if (JsonValue.Type == JTokenType.Integer)
+                        {
+                            int value = (int)JsonValue.Value;
+                            value *= factor;
+                            JsonValue.Value = value;
+                            selectedNode.Text = value.ToString();
+                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            WriteToSelectedNode();
+                        }
+                        else if (JsonValue.Type == JTokenType.Float)
+                        {
+                            float value = Convert.ToSingle(JsonValue.Value);
+                            value *= factor;
+                            JsonValue.Value = value;
+                            selectedNode.Text = value.ToString();
+                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            WriteToSelectedNode();
+                        }
+                    }
+                }
+            }
+            else if (whattodovalue == 3)
+            {
+                //Divide
+                var JPropTag = selectedNode.Tag as TreeNodeTagClass;
+                var JPropNode = JPropTag.JsonObject as JProperty;
+                if (JPropNode != null)
+                {
+                    if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Float)
+                    {
+                        float value = Convert.ToSingle(JPropNode.Value);
+                        value /= factor;
+                        JPropNode.Value = value;
+                        selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
+                        ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                        WriteToSelectedNode();
+                    }
+                    else if (JPropNode.Children().FirstOrDefault().Type == JTokenType.Integer)
+                    {
+                        int value = (int)JPropNode.Value;
+                        value /= factor;
+                        JPropNode.Value = value;
+                        selectedNode.Text = $"{JPropNode.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {value.ToTrimmedString()}";
+                        ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                        WriteToSelectedNode();
+                    }
+                }
+                else
+                {
+                    var JsonValue = JPropTag.JsonObject as JValue;
+                    if (JsonValue != null)
+                    {
+                        if (JsonValue.Type == JTokenType.Integer)
+                        {
+                            int value = (int)JsonValue.Value;
+                            value /= factor;
+                            JsonValue.Value = value;
+                            selectedNode.Text = value.ToString();
+                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            WriteToSelectedNode();
+                        }
+                        else if (JsonValue.Type == JTokenType.Float)
+                        {
+                            float value = Convert.ToSingle(JsonValue.Value);
+                            value /= factor;
+                            JsonValue.Value = value;
+                            selectedNode.Text = value.ToString();
+                            ColorizeEditedNode(selectedNode, Color.DarkOrange, Color.Black);
+                            WriteToSelectedNode();
+                        }
+                    }
+                }
             }
         }
     }

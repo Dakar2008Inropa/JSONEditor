@@ -9,6 +9,7 @@ namespace JSONEditor.Classes.Application
     public class TreeNodeTagClass
     {
         public string Name { get; set; }
+        public string NameSpaced { get; set; }
         public string Path { get; set; }
         public string Type { get; set; }
         public object JsonObject { get; set; }

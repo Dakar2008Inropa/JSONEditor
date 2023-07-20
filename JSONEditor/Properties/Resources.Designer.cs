@@ -173,6 +173,16 @@ namespace JSONEditor.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Rokey_Smooth_Metal_Msdos_batch_file_48 {
+            get {
+                object obj = ResourceManager.GetObject("Rokey-Smooth-Metal-Msdos-batch-file.48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap searchicon {
             get {
                 object obj = ResourceManager.GetObject("searchicon", resourceCulture);
