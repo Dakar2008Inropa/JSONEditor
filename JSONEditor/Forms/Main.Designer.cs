@@ -121,7 +121,7 @@
             // SettingsSpacedLabelsMenuItem
             // 
             SettingsSpacedLabelsMenuItem.Name = "SettingsSpacedLabelsMenuItem";
-            SettingsSpacedLabelsMenuItem.Size = new Size(180, 22);
+            SettingsSpacedLabelsMenuItem.Size = new Size(169, 22);
             SettingsSpacedLabelsMenuItem.Text = "Spaced Labels";
             SettingsSpacedLabelsMenuItem.Click += SettingsSpacedLabelsMenuItem_Click;
             // 
@@ -144,13 +144,13 @@
             MainTreeContextMenu.Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             MainTreeContextMenu.Items.AddRange(new ToolStripItem[] { MainTree_CollapseAllMenuItem, MainTree_ExpandAllMenuItem, toolStripSeparator1, MainTreeDuplicateNodeMenuItem, toolStripSeparator2, MainTreeSearchMenuItem });
             MainTreeContextMenu.Name = "MainTreeContextMenu";
-            MainTreeContextMenu.Size = new Size(174, 104);
+            MainTreeContextMenu.Size = new Size(181, 126);
             // 
             // MainTree_CollapseAllMenuItem
             // 
             MainTree_CollapseAllMenuItem.Image = Properties.Resources.Collapse_All_16x16;
             MainTree_CollapseAllMenuItem.Name = "MainTree_CollapseAllMenuItem";
-            MainTree_CollapseAllMenuItem.Size = new Size(173, 22);
+            MainTree_CollapseAllMenuItem.Size = new Size(180, 22);
             MainTree_CollapseAllMenuItem.Text = "Collapse All";
             MainTree_CollapseAllMenuItem.Click += MainTree_CollapseAllMenuItem_Click;
             // 
@@ -158,34 +158,35 @@
             // 
             MainTree_ExpandAllMenuItem.Image = Properties.Resources.Expand_All_16x16;
             MainTree_ExpandAllMenuItem.Name = "MainTree_ExpandAllMenuItem";
-            MainTree_ExpandAllMenuItem.Size = new Size(173, 22);
+            MainTree_ExpandAllMenuItem.Size = new Size(180, 22);
             MainTree_ExpandAllMenuItem.Text = "Expand All";
             MainTree_ExpandAllMenuItem.Click += MainTree_ExpandAllMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(170, 6);
+            toolStripSeparator1.Size = new Size(177, 6);
             // 
             // MainTreeDuplicateNodeMenuItem
             // 
             MainTreeDuplicateNodeMenuItem.Image = Properties.Resources.Amitjakhu_Drip_Duplicate_48;
             MainTreeDuplicateNodeMenuItem.Name = "MainTreeDuplicateNodeMenuItem";
-            MainTreeDuplicateNodeMenuItem.Size = new Size(173, 22);
+            MainTreeDuplicateNodeMenuItem.Size = new Size(180, 22);
             MainTreeDuplicateNodeMenuItem.Text = "Duplicate Node";
             MainTreeDuplicateNodeMenuItem.Click += MainTreeDuplicateNodeMenuItem_Click;
             // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(170, 6);
+            toolStripSeparator2.Size = new Size(177, 6);
             // 
             // MainTreeSearchMenuItem
             // 
             MainTreeSearchMenuItem.Image = Properties.Resources.searchicon;
             MainTreeSearchMenuItem.Name = "MainTreeSearchMenuItem";
-            MainTreeSearchMenuItem.Size = new Size(173, 22);
+            MainTreeSearchMenuItem.Size = new Size(180, 22);
             MainTreeSearchMenuItem.Text = "Search";
+            MainTreeSearchMenuItem.Click += MainTreeSearchMenuItem_Click;
             // 
             // MultiFileTreeView
             // 

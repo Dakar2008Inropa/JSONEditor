@@ -41,6 +41,7 @@
             SearchTextbox.Size = new Size(636, 23);
             SearchTextbox.TabIndex = 0;
             SearchTextbox.TextAlign = HorizontalAlignment.Center;
+            SearchTextbox.KeyDown += SearchTextbox_KeyDown;
             // 
             // SearchMainTreeForm
             // 

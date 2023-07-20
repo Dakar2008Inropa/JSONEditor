@@ -1,4 +1,5 @@
 using JSONEditor.Classes.Application;
+using JSONEditor.Forms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
@@ -934,6 +935,26 @@ namespace JSONEditor
             selectedFileList.EditedAfterLoad = false;
             IsNodeEdited = false;
             selectedNode.ForeColor = Color.Black;
+            ChangeColorOfAllNodes(MainTreeView, Color.White, Color.Black);
+        }
+
+        private void ChangeColorOfAllNodes(TreeView treeView, Color backColor, Color foreColor)
+        {
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                RecursiveColorChange(node, backColor, foreColor);
+            }
+        }
+
+        private void RecursiveColorChange(TreeNode startNode, Color backColor, Color foreColor)
+        {
+            startNode.BackColor = backColor;
+            startNode.ForeColor = foreColor;
+
+            foreach (TreeNode node in startNode.Nodes)
+            {
+                RecursiveColorChange(node, backColor, foreColor);
+            }
         }
 
         private void OpenFolderMenuItem_Click(object sender, EventArgs e)
@@ -975,6 +996,7 @@ namespace JSONEditor
                     if (result == DialogResult.Yes)
                     {
                         JsonHelper.WriteToJsonFile(LoadedToken, selectedFileList.FilePath);
+                        ChangeColorOfAllNodes(MainTreeView, Color.White, Color.Black);
                     }
                     selectedFileList.EditedAfterLoad = false;
                     IsNodeEdited = false;
@@ -1077,6 +1099,57 @@ namespace JSONEditor
             else
             {
                 SettingsSpacedLabelsMenuItem.Checked = true;
+            }
+        }
+
+        private void SearchAndHighlightNodes(string searchValue, TreeView treeView, Color backColor, Color foreColor)
+        {
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                RecursiveSearchAndHighlight(node, searchValue, backColor, foreColor);
+            }
+        }
+
+        private void RecursiveSearchAndHighlight(TreeNode startNode, string searchValue, Color backColor, Color foreColor)
+        {
+            if (startNode.Tag != null)
+            {
+                TreeNodeTagClass nodeTag = (TreeNodeTagClass)startNode.Tag;
+                if(!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().Contains(searchValue.ToLower()))
+                {
+                    HighlightNodeAndParents(startNode, backColor, foreColor);
+                }
+            }
+            else
+            {
+                if(startNode.Text.ToLower().Contains(searchValue.ToLower()))
+                {
+                    HighlightNodeAndParents(startNode, backColor, foreColor);
+                }
+            }
+
+            foreach (TreeNode node in startNode.Nodes)
+            {
+                RecursiveSearchAndHighlight(node, searchValue, backColor, foreColor);
+            }
+        }
+
+        private void HighlightNodeAndParents(TreeNode node, Color backColor, Color foreColor)
+        {
+            while (node != null)
+            {
+                node.BackColor = backColor;
+                node.ForeColor = foreColor;
+                node = node.Parent;
+            }
+        }
+
+        private void MainTreeSearchMenuItem_Click(object sender, EventArgs e)
+        {
+            SearchMainTreeForm searchMainTreeForm = new SearchMainTreeForm();
+            if(searchMainTreeForm.ShowDialog() == DialogResult.OK)
+            {
+                SearchAndHighlightNodes(searchMainTreeForm.SearchData, MainTreeView, Color.Yellow, Color.Black);
             }
         }
     }
