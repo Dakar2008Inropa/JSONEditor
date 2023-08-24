@@ -79,12 +79,12 @@ namespace JSONEditor.Forms
             WhatToDoValue = (int)WhatToDoCombo.SelectedValue;
             FactorValue = int.Parse(FactorTextbox.Text);
 
-            if(string.IsNullOrEmpty(SearchData))
+            if (string.IsNullOrEmpty(SearchData))
             {
                 MessageBox.Show("Please enter a search value", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if(FactorValue == 0)
+            if (FactorValue == 0)
             {
                 MessageBox.Show("Please enter a factor value", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;

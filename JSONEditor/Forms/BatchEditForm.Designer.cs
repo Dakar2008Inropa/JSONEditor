@@ -72,6 +72,7 @@
             // PropertyMatchCombo
             // 
             PropertyMatchCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+            PropertyMatchCombo.FlatStyle = FlatStyle.Flat;
             PropertyMatchCombo.FormattingEnabled = true;
             PropertyMatchCombo.Location = new Point(412, 37);
             PropertyMatchCombo.Margin = new Padding(0, 0, 0, 5);
@@ -92,6 +93,7 @@
             // WhatToDoCombo
             // 
             WhatToDoCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+            WhatToDoCombo.FlatStyle = FlatStyle.Flat;
             WhatToDoCombo.FormattingEnabled = true;
             WhatToDoCombo.Location = new Point(5, 97);
             WhatToDoCombo.Margin = new Padding(0, 0, 5, 10);
@@ -137,7 +139,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 16F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.Gainsboro;
+            BackColor = Color.DarkGray;
             ClientSize = new Size(633, 176);
             Controls.Add(ExecuteBtn);
             Controls.Add(FactorTextbox);

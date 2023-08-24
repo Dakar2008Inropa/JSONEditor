@@ -157,4 +157,19 @@
   <data name="Rokey-Smooth-Metal-Msdos-batch-file.48" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Rokey-Smooth-Metal-Msdos-batch-file.48.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Papirus-Team-Papirus-Places-Folder-yellow-recent.48" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Papirus-Team-Papirus-Places-Folder-yellow-recent.48.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Rokey-The-Last-Order-Candy-My-recent-documents.48" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Rokey-The-Last-Order-Candy-My-recent-documents.48.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Aniket-Suvarna-Box-Bxs-file-json.48" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Aniket-Suvarna-Box-Bxs-file-json.48.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Custom-Icon-Design-Flatastic-1-Folder.48" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Custom-Icon-Design-Flatastic-1-Folder.48.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Fatcow-Farm-Fresh-Json.16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Fatcow-Farm-Fresh-Json.16.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

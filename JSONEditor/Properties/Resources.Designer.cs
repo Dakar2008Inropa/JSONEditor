@@ -73,6 +73,16 @@ namespace JSONEditor.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Aniket_Suvarna_Box_Bxs_file_json_48 {
+            get {
+                object obj = ResourceManager.GetObject("Aniket-Suvarna-Box-Bxs-file-json.48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Avosoft_Warm_Toolbar_Folder_open_48 {
             get {
                 object obj = ResourceManager.GetObject("Avosoft-Warm-Toolbar-Folder-open.48", resourceCulture);
@@ -86,6 +96,16 @@ namespace JSONEditor.Properties {
         internal static System.Drawing.Bitmap Collapse_All_16x16 {
             get {
                 object obj = ResourceManager.GetObject("Collapse_All_16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Custom_Icon_Design_Flatastic_1_Folder_48 {
+            get {
+                object obj = ResourceManager.GetObject("Custom-Icon-Design-Flatastic-1-Folder.48", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -133,6 +153,16 @@ namespace JSONEditor.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Fatcow_Farm_Fresh_Json_16 {
+            get {
+                object obj = ResourceManager.GetObject("Fatcow-Farm-Fresh-Json.16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Hopstarter_Sleek_Xp_Software_Windows_Close_Program_48 {
             get {
                 object obj = ResourceManager.GetObject("Hopstarter-Sleek-Xp-Software-Windows-Close-Program.48", resourceCulture);
@@ -146,6 +176,16 @@ namespace JSONEditor.Properties {
         internal static System.Drawing.Bitmap Iynque_Ios7_Style_Settings_48 {
             get {
                 object obj = ResourceManager.GetObject("Iynque-Ios7-Style-Settings.48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Papirus_Team_Papirus_Places_Folder_yellow_recent_48 {
+            get {
+                object obj = ResourceManager.GetObject("Papirus-Team-Papirus-Places-Folder-yellow-recent.48", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -176,6 +216,16 @@ namespace JSONEditor.Properties {
         internal static System.Drawing.Bitmap Rokey_Smooth_Metal_Msdos_batch_file_48 {
             get {
                 object obj = ResourceManager.GetObject("Rokey-Smooth-Metal-Msdos-batch-file.48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Rokey_The_Last_Order_Candy_My_recent_documents_48 {
+            get {
+                object obj = ResourceManager.GetObject("Rokey-The-Last-Order-Candy-My-recent-documents.48", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

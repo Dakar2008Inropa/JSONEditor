@@ -1,10 +1,9 @@
 using JSONEditor.Classes.Application;
+using JSONEditor.Classes.RecentFiles;
+using JSONEditor.Classes.RecentFolders;
 using JSONEditor.Forms;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using static System.ComponentModel.Design.ObjectSelectorEditor;
 
 namespace JSONEditor
 {
@@ -22,6 +21,10 @@ namespace JSONEditor
 
         private TreeNode lastEditedNode { get; set; }
 
+        private List<RecentFiles> RecentFilesList { get; set; }
+
+        private List<RecentFolders> RecentFoldersList { get; set; }
+
         public Main()
         {
             AppSettings = SettingsHelper.Load();
@@ -29,6 +32,8 @@ namespace JSONEditor
             IsNodeEdited = false;
             lastEditedNode = null;
             LoadedUnEditedToken = null;
+            RecentFilesList = RecentFilesHelper.Load();
+            RecentFoldersList = RecentFoldersHelper.Load();
             InitializeComponent();
         }
 
@@ -36,6 +41,9 @@ namespace JSONEditor
         {
             SetWindowPositionAndSize();
             SetSettingsValues();
+            EnableDisableTreeViewContextMenu();
+            PopulateRecentFiles();
+            PopulateRecentFolders();
         }
 
         private void SetWindowPositionAndSize()
@@ -52,6 +60,39 @@ namespace JSONEditor
         private void SetSettingsValues()
         {
             SettingsSpacedLabelsMenuItem.Checked = AppSettings.SpacedLabels;
+        }
+
+        private bool IsTreeViewEmpty(TreeView view)
+        {
+            if (view.Nodes.Count == 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private void EnableDisableTreeViewContextMenu()
+        {
+            if (IsTreeViewEmpty(MainTreeView))
+            {
+                MainTreeView.ContextMenuStrip = null;
+            }
+            else
+            {
+                MainTreeView.ContextMenuStrip = MainTreeContextMenu;
+            }
+
+            if (IsTreeViewEmpty(MultiFileTreeView))
+            {
+                MultiFileTreeView.ContextMenuStrip = null;
+            }
+            else
+            {
+                MultiFileTreeView.ContextMenuStrip = MultiFileTreeViewContextMenu;
+            }
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -156,15 +197,83 @@ namespace JSONEditor
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 JsonFileList.Clear();
+                MultiFileTreeView.Nodes.Clear();
+                MainTreeView.Nodes.Clear();
                 foreach (var file in ofd.FileNames)
                 {
                     FileList flist = new FileList();
                     flist.Name = Path.GetFileNameWithoutExtension(file);
                     flist.FilePath = file;
                     JsonFileList.Add(flist);
+
+                    if (!RecentFilesList.Exists(x => x.Path == flist.FilePath))
+                    {
+                        if (RecentFilesList.Count == 10)
+                        {
+                            RecentFilesList.RemoveAt(0);
+                        }
+                        RecentFiles newRecentFile = new RecentFiles();
+                        newRecentFile.DisplayName = flist.Name;
+                        newRecentFile.Path = flist.FilePath;
+                        newRecentFile.Added = DateTime.Now.ToFileTimeUtc();
+                        RecentFilesList.Add(newRecentFile);
+                    }
                 }
+                RecentFilesHelper.Save(RecentFilesList);
+                PopulateRecentFiles();
                 UpdateFileTreeView(null, null);
             }
+        }
+
+        private void PopulateRecentFiles()
+        {
+            RecentFilesMenuItem.DropDownItems.Clear();
+            foreach (var file in RecentFilesList)
+            {
+                ToolStripMenuItem recentFile = new ToolStripMenuItem();
+                recentFile.Text = file.DisplayName;
+                recentFile.ToolTipText = file.Path;
+                recentFile.Image = Properties.Resources.Fatcow_Farm_Fresh_Json_16;
+                recentFile.Tag = file.Path;
+                recentFile.Click += RecentFile_Click;
+                RecentFilesMenuItem.DropDownItems.Add(recentFile);
+            }
+        }
+
+        private void RecentFile_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem toolStripMenuItem = sender as ToolStripMenuItem;
+            JsonFileList.Clear();
+            FileList flist = new FileList();
+            flist.Name = Path.GetFileNameWithoutExtension(toolStripMenuItem.Tag.ToString());
+            flist.FilePath = toolStripMenuItem.Tag.ToString();
+            JsonFileList.Add(flist);
+            MultiFileTreeView.Nodes.Clear();
+            MainTreeView.Nodes.Clear();
+            UpdateFileTreeView(null, null);
+        }
+
+        private void PopulateRecentFolders()
+        {
+            RecentFoldersMenuItem.DropDownItems.Clear();
+            foreach (var folder in RecentFoldersList)
+            {
+                ToolStripMenuItem recentFolder = new ToolStripMenuItem();
+                recentFolder.Text = folder.DisplayName;
+                recentFolder.ToolTipText = folder.Path;
+                recentFolder.Tag = folder.Path;
+                recentFolder.Image = Properties.Resources.Custom_Icon_Design_Flatastic_1_Folder_48;
+                recentFolder.Click += RecentFolder_Click;
+                RecentFoldersMenuItem.DropDownItems.Add(recentFolder);
+            }
+        }
+
+        private void RecentFolder_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem toolStripMenuItem = sender as ToolStripMenuItem;
+            MultiFileTreeView.Nodes.Clear();
+            MainTreeView.Nodes.Clear();
+            UpdateFileTreeView(toolStripMenuItem.Tag.ToString(), "*.json", true);
         }
 
         private async void UpdateFileTreeView(string root, string fileFilter, bool FolderStructure = false)
@@ -201,6 +310,7 @@ namespace JSONEditor
             }
             MultiFileTreeView.EndUpdate();
             MultiFileTreeView.Nodes[0].Expand();
+            EnableDisableTreeViewContextMenu();
         }
 
         private void DisplayTreeView(JToken root, string rootName)
@@ -916,6 +1026,7 @@ namespace JSONEditor
                 MainTreeView.Nodes[0].Expand();
                 MainTreeView.SelectedNode = MainTreeView.Nodes[0];
                 MainTreeView.Focus();
+                EnableDisableTreeViewContextMenu();
             }
         }
 
@@ -968,6 +1079,23 @@ namespace JSONEditor
             fbd.ShowDialog();
             if (fbd.SelectedPath != "")
             {
+                if (!RecentFoldersList.Exists(x => x.Path == fbd.SelectedPath))
+                {
+                    if (RecentFoldersList.Count == 10)
+                    {
+                        RecentFoldersList.RemoveAt(0);
+                    }
+                    RecentFolders newRecentFolder = new RecentFolders();
+                    DirectoryInfo dirInfo = new DirectoryInfo(fbd.SelectedPath);
+                    newRecentFolder.DisplayName = dirInfo.Name;
+                    newRecentFolder.Path = fbd.SelectedPath;
+                    newRecentFolder.Added = DateTime.Now.ToFileTimeUtc();
+                    RecentFoldersList.Add(newRecentFolder);
+                }
+                RecentFoldersHelper.Save(RecentFoldersList);
+                PopulateRecentFolders();
+                MultiFileTreeView.Nodes.Clear();
+                MainTreeView.Nodes.Clear();
                 UpdateFileTreeView(fbd.SelectedPath, "*.json", true);
             }
         }
@@ -1159,7 +1287,7 @@ namespace JSONEditor
         private void MainTreeBatchEditMenuItem_Click(object sender, EventArgs e)
         {
             BatchEditForm batchEditForm = new BatchEditForm();
-            if(batchEditForm.ShowDialog() == DialogResult.OK)
+            if (batchEditForm.ShowDialog() == DialogResult.OK)
             {
                 ExecuteMainTreeBatch(batchEditForm.SearchData, MainTreeView, batchEditForm.SearchMatchValue, batchEditForm.WhatToDoValue, batchEditForm.FactorValue);
             }
@@ -1175,24 +1303,24 @@ namespace JSONEditor
 
         private void RecursiveSearchAndBatchEdit(TreeNode startNode, string searchValue, int searchmatchvalue, int whattodovalue, int factor)
         {
-            if(startNode.Tag != null)
+            if (startNode.Tag != null)
             {
                 TreeNodeTagClass nodeTag = (TreeNodeTagClass)startNode.Tag;
-                if(searchmatchvalue == 0)
+                if (searchmatchvalue == 0)
                 {
                     if (!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().Contains(searchValue.ToLower()))
                     {
                         BatchEditNode(startNode, whattodovalue, factor);
                     }
                 }
-                else if(searchmatchvalue == 1)
+                else if (searchmatchvalue == 1)
                 {
                     if (!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().StartsWith(searchValue.ToLower()))
                     {
                         BatchEditNode(startNode, whattodovalue, factor);
                     }
                 }
-                else if(searchmatchvalue == 2)
+                else if (searchmatchvalue == 2)
                 {
                     if (!string.IsNullOrEmpty(nodeTag.Name) && nodeTag.Name.ToLower().EndsWith(searchValue.ToLower()))
                     {
