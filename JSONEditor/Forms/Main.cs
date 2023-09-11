@@ -1,6 +1,7 @@
 using JSONEditor.Classes.Application;
 using JSONEditor.Classes.RecentFiles;
 using JSONEditor.Classes.RecentFolders;
+using JSONEditor.Classes.Tools;
 using JSONEditor.Forms;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
@@ -38,7 +39,6 @@ namespace JSONEditor
             RecentFilesList = RecentFilesHelper.Load();
             RecentFoldersList = RecentFoldersHelper.Load();
 
-            batchWorker.WorkerReportsProgress = true;
             batchWorker.DoWork += BatchWorker_DoWork;
             batchWorker.RunWorkerCompleted += batchWorker_RunWorkerCompleted;
             InitializeComponent();
@@ -1025,6 +1025,23 @@ namespace JSONEditor
             }
         }
 
+        private void WriteToSpecificNode(TreeNode node)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => WriteToSpecificNode(node)));
+                return;
+            }
+            if (node != null)
+            {
+                FileList selectedItem = node.Tag as FileList;
+                selectedItem.EditedAfterLoad = true;
+                IsNodeEdited = true;
+                lastEditedNode = node;
+                node.ForeColor = Color.Red;
+            }
+        }
+
         private void MultiFileTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             FileList selectedNode = e.Node.Tag as FileList;
@@ -1315,12 +1332,16 @@ namespace JSONEditor
         private void ShowUpdateLabel()
         {
             ProgressLabel.Visible = true;
+            ProgressLabel.BringToFront();
+            MainMenu.Enabled = false;
             this.Cursor = Cursors.WaitCursor;
         }
 
         private void HideUpdateLabel()
         {
             ProgressLabel.Visible = false;
+            MainMenu.Enabled = true;
+            ProgressLabel.SendToBack();
             this.Cursor = Cursors.Default;
         }
 
@@ -1628,28 +1649,162 @@ namespace JSONEditor
             }
         }
 
-        private int GetTotalNodesToProcess(TreeView treeView)
+        private void CopyToOtherNodesMenuItem_Click(object sender, EventArgs e)
         {
-            int totalNodes = 0;
-
-            foreach (TreeNode node in treeView.Nodes)
+            TreeNode selectedNode = MainTreeView.SelectedNode;
+            if (selectedNode != null && selectedNode.Level > 1)
             {
-                totalNodes += GetTotalNodesRecursive(node);
+                ShowUpdateLabel();
+                Thread thread = new Thread(() => CopyToAllNodes());
+                thread.Start();
             }
-
-            return totalNodes;
         }
 
-        private int GetTotalNodesRecursive(TreeNode node)
+        private void CopyToAllNodes()
         {
-            int totalNodes = 1;
-
-            foreach (TreeNode childNode in node.Nodes)
+            CopyClass cc = new CopyClass();
+            this.Invoke((MethodInvoker)delegate 
             {
-                totalNodes += GetTotalNodesRecursive(childNode);
-            }
+                TreeNode selectedNode = null;
+                selectedNode = MainTreeView.SelectedNode;
+                var JNodeTag = selectedNode.Tag as TreeNodeTagClass;
+                if (JNodeTag != null)
+                {
+                    var JToken = JNodeTag.JsonObject as JToken;
+                    var JProperty = JNodeTag.JsonObject as JProperty;
 
-            return totalNodes;
+                    IEnumerable<JToken> matchingTokens = FindTokens(LoadedToken.Root, JProperty.Name);
+
+                    cc.NumberOfPathsRecieved = matchingTokens.Count();
+
+                    if (JToken.First().Type == JTokenType.Array)
+                    {
+                        cc.ValueToCopy = JToken.First() as JArray;
+                        cc.ValueToCopyType = JTokenType.Object;
+                    }
+                    else
+                    {
+                        cc.ValueToCopy = JToken as JProperty;
+                        cc.ValueToCopyType = JTokenType.Property;
+                    }
+                    var nodes = MainTreeView.Nodes;
+                    foreach (JToken token in matchingTokens)
+                    {
+                        UpdateTreeNodeByPath(nodes, JProperty.Name, token.Path, JProperty);
+                        var currentNodeJProp = token as JProperty;
+                        if (JToken.First().Type == JTokenType.Array)
+                        {
+                            var JTokenArray = JToken.First() as JArray;
+                            var currentNodeArray = token as JArray;
+                            currentNodeArray.Clear();
+                            for (int i = 0; i < JTokenArray.Count; i++)
+                            {
+                                JValue item = JTokenArray[i] as JValue;
+                                currentNodeArray.Add(item);
+                            }
+                        }
+                        else if (JToken.First().Type == JTokenType.Object)
+                        {
+                            var currentNodeJObject = token as JObject;
+                            var valueToCopyJObject = JToken.FirstOrDefault() as JObject;
+                            if (valueToCopyJObject == null)
+                            {
+                                valueToCopyJObject = new JObject();
+                            }
+                            var valuesToCopyList = valueToCopyJObject.Properties().ToList();
+                            var currentNodeJObjectProperties = currentNodeJObject.Properties().ToList();
+                            for (int i = 0; i < valuesToCopyList.Count; i++)
+                            {
+                                currentNodeJObjectProperties[i].Value = valuesToCopyList[i].Value;
+                            }
+                        }
+                        else
+                        {
+                            if (token.Type != JTokenType.Property)
+                            {
+                                currentNodeJProp = token.Parent as JProperty;
+                            }
+                            currentNodeJProp.Value = JProperty.Value;
+                        }
+                    }
+                }
+            });
+            FinishUpCopyToAllPaths(cc);
+        }
+
+        private void UpdateTreeNodeByPath(TreeNodeCollection nodes, string targetPropertyName, string specificPath, JProperty jProp)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                if (node.Tag is TreeNodeTagClass tag && tag.Path == specificPath)
+                {
+                    node.Text = $"{jProp.Name.ToSpacedName(SettingsSpacedLabelsMenuItem.Checked)}: {jProp.Value}";
+                    ColorizeEditedNode(node, Color.DarkOrange, Color.Black);
+                    WriteToSelectedNode();
+                    return;
+                }
+
+                UpdateTreeNodeByPath(node.Nodes, targetPropertyName, specificPath, jProp);
+            }
+        }
+
+        static IEnumerable<JToken> FindTokens(JToken token, string targetPropertyName, string currentPath = "")
+        {
+            if (token is JObject obj)
+            {
+                foreach (var property in obj.Properties())
+                {
+                    string newPath = currentPath + "." + property.Name;
+                    if (property.Name == targetPropertyName)
+                    {
+                        yield return property.Value;
+                    }
+
+                    foreach (var matchingToken in FindTokens(property.Value, targetPropertyName, newPath))
+                    {
+                        yield return matchingToken;
+                    }
+                }
+            }
+            else if (token is JArray array)
+            {
+                for (int i = 0; i < array.Count; i++)
+                {
+                    string newPath = currentPath + "[" + i + "]";
+                    foreach (var matchingToken in FindTokens(array[i], targetPropertyName, newPath))
+                    {
+                        yield return matchingToken;
+                    }
+                }
+            }
+        }
+
+        private void FinishUpCopyToAllPaths(CopyClass cc)
+        {
+            this.Invoke((MethodInvoker)delegate
+            {
+                HideUpdateLabel();
+                string propertyname = "";
+                if (cc.ValueToCopyType == JTokenType.Array)
+                {
+                    var array = cc.ValueToCopy as JArray;
+                    var propertyNameJProp = array.Parent as JProperty;
+                    propertyname = propertyNameJProp.Name.ToSpacedName(AppSettings.SpacedLabels);
+                }
+                else if (cc.ValueToCopyType == JTokenType.Object)
+                {
+                    var obj = cc.ValueToCopy as JObject;
+                    var propertyNameJProp = obj.Parent as JProperty;
+                    propertyname = propertyNameJProp.Name.ToSpacedName(AppSettings.SpacedLabels);
+                }
+                else
+                {
+                    var proper = cc.ValueToCopy as JProperty;
+                    var pathNameJProp = proper.Parent.Parent.Parent.Parent as JProperty;
+                    propertyname = proper.Name.ToSpacedName(AppSettings.SpacedLabels);
+                }
+                MessageBox.Show($"Copied\n{propertyname} \nto {cc.NumberOfPathsRecieved} items.", "Copy Successfull", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            });
         }
     }
 }

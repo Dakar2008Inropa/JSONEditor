@@ -50,6 +50,8 @@
             toolStripSeparator1 = new ToolStripSeparator();
             MainTreeBatchEditMenuItem = new ToolStripMenuItem();
             toolStripSeparator4 = new ToolStripSeparator();
+            CopyToOtherNodesMenuItem = new ToolStripMenuItem();
+            toolStripSeparator6 = new ToolStripSeparator();
             MainTreeDuplicateNodeMenuItem = new ToolStripMenuItem();
             MultiFileTreeView = new TreeView();
             MultiFileTreeViewContextMenu = new ContextMenuStrip(components);
@@ -168,28 +170,28 @@
             // MainTreeContextMenu
             // 
             MainTreeContextMenu.Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
-            MainTreeContextMenu.Items.AddRange(new ToolStripItem[] { MainTreeSearchMenuItem, toolStripSeparator2, MainTree_CollapseAllMenuItem, MainTree_ExpandAllMenuItem, toolStripSeparator1, MainTreeBatchEditMenuItem, toolStripSeparator4, MainTreeDuplicateNodeMenuItem });
+            MainTreeContextMenu.Items.AddRange(new ToolStripItem[] { MainTreeSearchMenuItem, toolStripSeparator2, MainTree_CollapseAllMenuItem, MainTree_ExpandAllMenuItem, toolStripSeparator1, MainTreeBatchEditMenuItem, toolStripSeparator4, CopyToOtherNodesMenuItem, toolStripSeparator6, MainTreeDuplicateNodeMenuItem });
             MainTreeContextMenu.Name = "MainTreeContextMenu";
-            MainTreeContextMenu.Size = new Size(174, 132);
+            MainTreeContextMenu.Size = new Size(221, 182);
             // 
             // MainTreeSearchMenuItem
             // 
             MainTreeSearchMenuItem.Image = Properties.Resources.searchicon;
             MainTreeSearchMenuItem.Name = "MainTreeSearchMenuItem";
-            MainTreeSearchMenuItem.Size = new Size(173, 22);
+            MainTreeSearchMenuItem.Size = new Size(220, 22);
             MainTreeSearchMenuItem.Text = "Search";
             MainTreeSearchMenuItem.Click += MainTreeSearchMenuItem_Click;
             // 
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new Size(170, 6);
+            toolStripSeparator2.Size = new Size(217, 6);
             // 
             // MainTree_CollapseAllMenuItem
             // 
             MainTree_CollapseAllMenuItem.Image = Properties.Resources.Collapse_All_16x16;
             MainTree_CollapseAllMenuItem.Name = "MainTree_CollapseAllMenuItem";
-            MainTree_CollapseAllMenuItem.Size = new Size(173, 22);
+            MainTree_CollapseAllMenuItem.Size = new Size(220, 22);
             MainTree_CollapseAllMenuItem.Text = "Collapse All";
             MainTree_CollapseAllMenuItem.Click += MainTree_CollapseAllMenuItem_Click;
             // 
@@ -197,33 +199,45 @@
             // 
             MainTree_ExpandAllMenuItem.Image = Properties.Resources.Expand_All_16x16;
             MainTree_ExpandAllMenuItem.Name = "MainTree_ExpandAllMenuItem";
-            MainTree_ExpandAllMenuItem.Size = new Size(173, 22);
+            MainTree_ExpandAllMenuItem.Size = new Size(220, 22);
             MainTree_ExpandAllMenuItem.Text = "Expand All";
             MainTree_ExpandAllMenuItem.Click += MainTree_ExpandAllMenuItem_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(170, 6);
+            toolStripSeparator1.Size = new Size(217, 6);
             // 
             // MainTreeBatchEditMenuItem
             // 
             MainTreeBatchEditMenuItem.Image = Properties.Resources.Rokey_Smooth_Metal_Msdos_batch_file_48;
             MainTreeBatchEditMenuItem.Name = "MainTreeBatchEditMenuItem";
-            MainTreeBatchEditMenuItem.Size = new Size(173, 22);
+            MainTreeBatchEditMenuItem.Size = new Size(220, 22);
             MainTreeBatchEditMenuItem.Text = "Batch Edit";
             MainTreeBatchEditMenuItem.Click += MainTreeBatchEditMenuItem_Click;
             // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
-            toolStripSeparator4.Size = new Size(170, 6);
+            toolStripSeparator4.Size = new Size(217, 6);
+            // 
+            // CopyToOtherNodesMenuItem
+            // 
+            CopyToOtherNodesMenuItem.Name = "CopyToOtherNodesMenuItem";
+            CopyToOtherNodesMenuItem.Size = new Size(220, 22);
+            CopyToOtherNodesMenuItem.Text = "Copy To Similar Nodes";
+            CopyToOtherNodesMenuItem.Click += CopyToOtherNodesMenuItem_Click;
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new Size(217, 6);
             // 
             // MainTreeDuplicateNodeMenuItem
             // 
             MainTreeDuplicateNodeMenuItem.Image = Properties.Resources.Amitjakhu_Drip_Duplicate_48;
             MainTreeDuplicateNodeMenuItem.Name = "MainTreeDuplicateNodeMenuItem";
-            MainTreeDuplicateNodeMenuItem.Size = new Size(173, 22);
+            MainTreeDuplicateNodeMenuItem.Size = new Size(220, 22);
             MainTreeDuplicateNodeMenuItem.Text = "Duplicate Node";
             MainTreeDuplicateNodeMenuItem.Click += MainTreeDuplicateNodeMenuItem_Click;
             // 
@@ -284,7 +298,6 @@
             // 
             // splitContainer1.Panel2
             // 
-            splitContainer1.Panel2.Controls.Add(ProgressLabel);
             splitContainer1.Panel2.Controls.Add(MainTreeView);
             splitContainer1.Size = new Size(916, 430);
             splitContainer1.SplitterDistance = 200;
@@ -297,8 +310,8 @@
             ProgressLabel.Dock = DockStyle.Fill;
             ProgressLabel.Location = new Point(0, 0);
             ProgressLabel.Name = "ProgressLabel";
-            ProgressLabel.Size = new Size(710, 430);
-            ProgressLabel.TabIndex = 1;
+            ProgressLabel.Size = new Size(934, 473);
+            ProgressLabel.TabIndex = 4;
             ProgressLabel.Text = "Updating Data... Please Wait...";
             ProgressLabel.TextAlign = ContentAlignment.MiddleCenter;
             ProgressLabel.Visible = false;
@@ -311,6 +324,7 @@
             ClientSize = new Size(934, 473);
             Controls.Add(splitContainer1);
             Controls.Add(MainMenu);
+            Controls.Add(ProgressLabel);
             Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = MainMenu;
@@ -362,5 +376,7 @@
         private ToolStripSeparator toolStripSeparator5;
         private ToolTip FileMenuToolTip;
         private Label ProgressLabel;
+        private ToolStripMenuItem CopyToOtherNodesMenuItem;
+        private ToolStripSeparator toolStripSeparator6;
     }
 }
