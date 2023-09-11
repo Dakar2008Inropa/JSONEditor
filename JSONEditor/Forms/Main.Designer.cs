@@ -57,6 +57,7 @@
             MultiFileTreeViewImgList = new ImageList(components);
             splitContainer1 = new SplitContainer();
             FileMenuToolTip = new ToolTip(components);
+            ProgressLabel = new Label();
             MainMenu.SuspendLayout();
             MainTreeContextMenu.SuspendLayout();
             MultiFileTreeViewContextMenu.SuspendLayout();
@@ -283,12 +284,24 @@
             // 
             // splitContainer1.Panel2
             // 
+            splitContainer1.Panel2.Controls.Add(ProgressLabel);
             splitContainer1.Panel2.Controls.Add(MainTreeView);
             splitContainer1.Size = new Size(916, 430);
             splitContainer1.SplitterDistance = 200;
             splitContainer1.SplitterWidth = 6;
             splitContainer1.TabIndex = 3;
             splitContainer1.TabStop = false;
+            // 
+            // ProgressLabel
+            // 
+            ProgressLabel.Dock = DockStyle.Fill;
+            ProgressLabel.Location = new Point(0, 0);
+            ProgressLabel.Name = "ProgressLabel";
+            ProgressLabel.Size = new Size(710, 430);
+            ProgressLabel.TabIndex = 1;
+            ProgressLabel.Text = "Updating Data... Please Wait...";
+            ProgressLabel.TextAlign = ContentAlignment.MiddleCenter;
+            ProgressLabel.Visible = false;
             // 
             // Main
             // 
@@ -348,5 +361,6 @@
         private ToolStripMenuItem RecentFoldersMenuItem;
         private ToolStripSeparator toolStripSeparator5;
         private ToolTip FileMenuToolTip;
+        private Label ProgressLabel;
     }
 }

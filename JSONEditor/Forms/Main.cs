@@ -3,6 +3,7 @@ using JSONEditor.Classes.RecentFiles;
 using JSONEditor.Classes.RecentFolders;
 using JSONEditor.Forms;
 using Newtonsoft.Json.Linq;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace JSONEditor
@@ -25,6 +26,8 @@ namespace JSONEditor
 
         private List<RecentFolders> RecentFoldersList { get; set; }
 
+        private BackgroundWorker batchWorker = new BackgroundWorker();
+
         public Main()
         {
             AppSettings = SettingsHelper.Load();
@@ -34,6 +37,10 @@ namespace JSONEditor
             LoadedUnEditedToken = null;
             RecentFilesList = RecentFilesHelper.Load();
             RecentFoldersList = RecentFoldersHelper.Load();
+
+            batchWorker.WorkerReportsProgress = true;
+            batchWorker.DoWork += BatchWorker_DoWork;
+            batchWorker.RunWorkerCompleted += batchWorker_RunWorkerCompleted;
             InitializeComponent();
         }
 
@@ -501,6 +508,11 @@ namespace JSONEditor
 
         private void ColorizeEditedNode(TreeNode node, Color color, Color foregroundC)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => ColorizeEditedNode(node, color, foregroundC)));
+                return;
+            }
             node.BackColor = color;
             node.ForeColor = foregroundC;
             var parent = node.Parent;
@@ -996,6 +1008,12 @@ namespace JSONEditor
 
         private void WriteToSelectedNode()
         {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(WriteToSelectedNode));
+                return;
+            }
+
             TreeNode selectedNode = MultiFileTreeView.SelectedNode;
             if (selectedNode != null)
             {
@@ -1287,17 +1305,44 @@ namespace JSONEditor
         private void MainTreeBatchEditMenuItem_Click(object sender, EventArgs e)
         {
             BatchEditForm batchEditForm = new BatchEditForm();
-            if (batchEditForm.ShowDialog() == DialogResult.OK)
+            if (batchEditForm.ShowDialog() == DialogResult.OK && !batchWorker.IsBusy)
             {
-                ExecuteMainTreeBatch(batchEditForm.SearchData, MainTreeView, batchEditForm.SearchMatchValue, batchEditForm.WhatToDoValue, batchEditForm.FactorValue);
+                ShowUpdateLabel();
+                batchWorker.RunWorkerAsync(new { Param1 = batchEditForm.SearchData, Param2 = MainTreeView, Param3 = batchEditForm.SearchMatchValue, Param4 = batchEditForm.WhatToDoValue, Param5 = batchEditForm.FactorValue });
             }
         }
 
-        private void ExecuteMainTreeBatch(string search, TreeView treeView, int searchmatchvalue, int whattodovalue, int factor)
+        private void ShowUpdateLabel()
         {
-            foreach (TreeNode node in treeView.Nodes)
+            ProgressLabel.Visible = true;
+            this.Cursor = Cursors.WaitCursor;
+        }
+
+        private void HideUpdateLabel()
+        {
+            ProgressLabel.Visible = false;
+            this.Cursor = Cursors.Default;
+        }
+
+        private void BatchWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            dynamic data = e.Argument;
+            foreach (TreeNode node in data.Param2.Nodes)
             {
-                RecursiveSearchAndBatchEdit(node, search, searchmatchvalue, whattodovalue, factor);
+                RecursiveSearchAndBatchEdit(node, data.Param1, data.Param3, data.Param4, data.Param5);
+            }
+        }
+
+        private void batchWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            HideUpdateLabel();
+            if (e.Error != null)
+            {
+                MessageBox.Show($"Error: {e.Error.Message}", "Batch edit", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                MessageBox.Show("Batch edit completed", "Batch edit", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -1368,6 +1413,11 @@ namespace JSONEditor
 
         private void BatchEditNode(TreeNode selectedNode, int whattodovalue, int factor)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => BatchEditNode(selectedNode, whattodovalue, factor)));
+                return;
+            }
             if (whattodovalue == 0)
             {
                 //Add
@@ -1576,6 +1626,30 @@ namespace JSONEditor
                     }
                 }
             }
+        }
+
+        private int GetTotalNodesToProcess(TreeView treeView)
+        {
+            int totalNodes = 0;
+
+            foreach (TreeNode node in treeView.Nodes)
+            {
+                totalNodes += GetTotalNodesRecursive(node);
+            }
+
+            return totalNodes;
+        }
+
+        private int GetTotalNodesRecursive(TreeNode node)
+        {
+            int totalNodes = 1;
+
+            foreach (TreeNode childNode in node.Nodes)
+            {
+                totalNodes += GetTotalNodesRecursive(childNode);
+            }
+
+            return totalNodes;
         }
     }
 }
