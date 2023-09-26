@@ -10,7 +10,7 @@ namespace JSONEditor
         static void Main()
         {
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
-            XmlConfigurator.Configure(logRepository, new FileInfo("log4netconfig.config"));
+            XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
             ApplicationConfiguration.Initialize();
             Application.Run(new Main());
         }
