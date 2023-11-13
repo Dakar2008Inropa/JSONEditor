@@ -33,6 +33,7 @@
                     Settings appsettings = new Settings();
                     appsettings.WindowPosition = new WindowPosition();
                     appsettings.WindowSize = new WindowSize();
+                    appsettings.BatchEdit = new BatchEdit();
 
                     return appsettings;
                 }
@@ -44,6 +45,7 @@
                 Settings appsettings = new Settings();
                 appsettings.WindowPosition = new WindowPosition();
                 appsettings.WindowSize = new WindowSize();
+                appsettings.BatchEdit = new BatchEdit();
 
                 return appsettings;
             }

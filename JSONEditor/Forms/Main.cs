@@ -1321,9 +1321,13 @@ namespace JSONEditor
 
         private void MainTreeBatchEditMenuItem_Click(object sender, EventArgs e)
         {
-            BatchEditForm batchEditForm = new BatchEditForm();
+            TreeNode selectedNode = MainTreeView.SelectedNode;
+            TreeNodeTagClass selectedNodeTag = selectedNode.Tag as TreeNodeTagClass;
+
+            BatchEditForm batchEditForm = new BatchEditForm(AppSettings, selectedNodeTag.Name);
             if (batchEditForm.ShowDialog() == DialogResult.OK && !batchWorker.IsBusy)
             {
+                AppSettings = batchEditForm.AppSettings;
                 ShowUpdateLabel();
                 batchWorker.RunWorkerAsync(new { Param1 = batchEditForm.SearchData, Param2 = MainTreeView, Param3 = batchEditForm.SearchMatchValue, Param4 = batchEditForm.WhatToDoValue, Param5 = batchEditForm.FactorValue });
             }

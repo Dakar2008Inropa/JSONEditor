@@ -13,6 +13,8 @@ namespace JSONEditor.Forms
 {
     public partial class BatchEditForm : Form
     {
+        public Settings AppSettings { get; set; }
+
         private List<BatchComboClass> MatchComboList { get; set; }
         private List<BatchComboClass> WhatToDoList { get; set; }
 
@@ -20,10 +22,14 @@ namespace JSONEditor.Forms
         public int SearchMatchValue { get; set; }
         public int WhatToDoValue { get; set; }
         public int FactorValue { get; set; }
-        public BatchEditForm()
+
+        private string SelectedNodeText { get; set; }
+        public BatchEditForm(Settings appSettings, string selectedNodeText = null)
         {
             MatchComboList = new List<BatchComboClass>();
             WhatToDoList = new List<BatchComboClass>();
+            AppSettings = appSettings;
+            SelectedNodeText = selectedNodeText;
             InitializeComponent();
         }
 
@@ -39,7 +45,7 @@ namespace JSONEditor.Forms
             PropertyMatchCombo.DataSource = MatchComboList;
             PropertyMatchCombo.DisplayMember = "Name";
             PropertyMatchCombo.ValueMember = "Value";
-            PropertyMatchCombo.SelectedIndex = 0;
+            PropertyMatchCombo.SelectedIndex = AppSettings.BatchEdit.LastUsedMatch;
         }
 
         private void PopulateWhatToDoCombo()
@@ -54,7 +60,7 @@ namespace JSONEditor.Forms
             WhatToDoCombo.DataSource = WhatToDoList;
             WhatToDoCombo.DisplayMember = "Name";
             WhatToDoCombo.ValueMember = "Value";
-            WhatToDoCombo.SelectedIndex = 0;
+            WhatToDoCombo.SelectedIndex = AppSettings.BatchEdit.LastUsedWhatToDoValue;
         }
 
         private void FactorTextbox_KeyPress(object sender, KeyPressEventArgs e)
@@ -70,6 +76,11 @@ namespace JSONEditor.Forms
         {
             PopulateMatchCombo();
             PopulateWhatToDoCombo();
+            if (!string.IsNullOrEmpty(SelectedNodeText))
+            {
+                PropertyToFindTextbox.Text = SelectedNodeText;
+            }
+            FactorTextbox.Text = AppSettings.BatchEdit.LastUsedFactor.ToString();
         }
 
         private void ExecuteBtn_Click(object sender, EventArgs e)
@@ -78,6 +89,10 @@ namespace JSONEditor.Forms
             SearchMatchValue = (int)PropertyMatchCombo.SelectedValue;
             WhatToDoValue = (int)WhatToDoCombo.SelectedValue;
             FactorValue = int.Parse(FactorTextbox.Text);
+
+            AppSettings.BatchEdit.LastUsedMatch = SearchMatchValue;
+            AppSettings.BatchEdit.LastUsedWhatToDoValue = WhatToDoValue;
+            AppSettings.BatchEdit.LastUsedFactor = FactorValue;
 
             if (string.IsNullOrEmpty(SearchData))
             {
