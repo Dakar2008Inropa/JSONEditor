@@ -56,8 +56,8 @@ namespace JSONEditor.Classes.Tools
             }
             catch (Exception ex)
             {
-                Logger.Log.Error(ex.Message);
-                Logger.Log.Error($"Following File Caused The Error: {Path.GetFileName(FilePath)}");
+                Log4net.Log.Error(ex.Message);
+                Log4net.Log.Error($"Following File Caused The Error: {Path.GetFileName(FilePath)}");
             }
             return root;
         }
@@ -74,7 +74,7 @@ namespace JSONEditor.Classes.Tools
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log.Error(ex.Message);
+                    Log4net.Log.Error(ex.Message);
                     throw;
                 }
                 finally

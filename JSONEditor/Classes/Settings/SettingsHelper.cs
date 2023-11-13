@@ -12,11 +12,11 @@
             {
                 Directory.CreateDirectory(SettingsPath);
                 JsonHelper.SerializeObject(settings, SettingsFile);
-                Logger.Log.Info("Settings Saved");
+                Log4net.Log.Info("Settings Saved");
             }
             catch (Exception ex)
             {
-                Logger.Log.Error(ex.Message);
+                Log4net.Log.Error(ex.Message);
                 throw;
             }
         }
@@ -39,7 +39,7 @@
             }
             catch (Exception ex)
             {
-                Logger.Log.Error(ex.Message);
+                Log4net.Log.Error(ex.Message);
 
                 Settings appsettings = new Settings();
                 appsettings.WindowPosition = new WindowPosition();

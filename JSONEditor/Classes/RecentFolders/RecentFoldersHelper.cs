@@ -18,11 +18,11 @@ namespace JSONEditor.Classes.RecentFolders
             {
                 Directory.CreateDirectory(RecentFoldersPath);
                 JsonHelper.SerializeObject(recentFolders, RecentFoldersFile);
-                Logger.Log.Info("RecentFolders Saved");
+                Log4net.Log.Info("RecentFolders Saved");
             }
             catch (Exception ex)
             {
-                Logger.Log.Error(ex.Message);
+                Log4net.Log.Error(ex.Message);
                 throw;
             }
         }
@@ -42,7 +42,7 @@ namespace JSONEditor.Classes.RecentFolders
             }
             catch (Exception ex)
             {
-                Logger.Log.Error(ex.Message);
+                Log4net.Log.Error(ex.Message);
 
                 return new List<RecentFolders>();
             }

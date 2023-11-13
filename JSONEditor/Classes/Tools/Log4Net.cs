@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace JSONEditor.Classes.Tools
 {
-    public static class Logger
+    public static class Log4net
     {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
