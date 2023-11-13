@@ -30,6 +30,10 @@ namespace JSONEditor.Forms
             WhatToDoList = new List<BatchComboClass>();
             AppSettings = appSettings;
             SelectedNodeText = selectedNodeText;
+            if(AppSettings.BatchEdit == null)
+            {
+                AppSettings.BatchEdit = new BatchEdit();
+            }
             InitializeComponent();
         }
 
