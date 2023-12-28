@@ -172,7 +172,7 @@
             MainTreeContextMenu.Font = new Font("Verdana", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             MainTreeContextMenu.Items.AddRange(new ToolStripItem[] { MainTreeSearchMenuItem, toolStripSeparator2, MainTree_CollapseAllMenuItem, MainTree_ExpandAllMenuItem, toolStripSeparator1, MainTreeBatchEditMenuItem, toolStripSeparator4, CopyToOtherNodesMenuItem, toolStripSeparator6, MainTreeDuplicateNodeMenuItem });
             MainTreeContextMenu.Name = "MainTreeContextMenu";
-            MainTreeContextMenu.Size = new Size(221, 182);
+            MainTreeContextMenu.Size = new Size(221, 160);
             // 
             // MainTreeSearchMenuItem
             // 
@@ -331,7 +331,7 @@
             MinimumSize = new Size(815, 355);
             Name = "Main";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Inropa JSON Editor";
+            Text = "Dakar2008's JSON Editor";
             FormClosing += Main_FormClosing;
             Load += Main_Load;
             MainMenu.ResumeLayout(false);
