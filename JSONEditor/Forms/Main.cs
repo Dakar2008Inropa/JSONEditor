@@ -126,7 +126,7 @@ namespace JSONEditor
             SaveSettings();
         }
 
-        private static TreeNode[] GetDirectoryNodes(DirectoryInfo directoryInfo, string fileFilter, Form mainform)
+        private static TreeNode[] GetDirectoryNodes(DirectoryInfo directoryInfo, string[] fileFilter, Form mainform)
         {
             var nodes = new List<TreeNode>();
             mainform.Invoke((MethodInvoker)delegate
@@ -137,30 +137,36 @@ namespace JSONEditor
                     {
                         var subNodes = GetDirectoryNodes(directory, fileFilter, mainform);
                         nodes.Add(new TreeNode(directory.Name, 1, 1, subNodes));
-                        mainform.Text = $"Inropa JSON Editor - Loading Data - {directory.Name}";
+                        mainform.Text = $"Dakar2008's JSON Editor - Loading Data - {directory.Name}";
                     }
                 }
-                foreach (var file in directoryInfo.GetFiles(fileFilter))
+                foreach (string filter in fileFilter)
                 {
-                    TreeNode fileNode = new TreeNode(file.Name, 0, 0);
-                    FileList jsonFile = new FileList();
-                    jsonFile.Name = file.Name;
-                    jsonFile.FilePath = file.FullName;
-                    mainform.Text = $"Inropa JSON Editor - Loading Data - {jsonFile.Name}";
-                    fileNode.Tag = jsonFile;
+                    foreach (var file in directoryInfo.GetFiles(filter))
+                    {
+                        TreeNode fileNode = new TreeNode(file.Name, 0, 0);
+                        FileList jsonFile = new FileList();
+                        jsonFile.Name = file.Name;
+                        jsonFile.FilePath = file.FullName;
+                        mainform.Text = $"Dakar2008's JSON Editor - Loading Data - {jsonFile.Name}";
+                        fileNode.Tag = jsonFile;
 
-                    nodes.Add(fileNode);
+                        nodes.Add(fileNode);
+                    }
                 }
             });
             return nodes.ToArray();
         }
 
-        private static bool DirectoryContainsFile(DirectoryInfo directory, string fileFilter)
+        private static bool DirectoryContainsFile(DirectoryInfo directory, string[] fileFilter)
         {
             // Check if the current directory contains the file
-            if (directory.GetFiles(fileFilter).Length > 0)
+            foreach (string filter in fileFilter)
             {
-                return true;
+                if (directory.GetFiles(filter).Length > 0)
+                {
+                    return true;
+                }
             }
 
             // Recursively check if any of the subdirectories contain the file
@@ -198,7 +204,7 @@ namespace JSONEditor
         private void OpenFileMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "JSON Files (*.json)|*.json";
+            ofd.Filter = "JSON Files (*.json)|*.json|JSONC Files (*.jsonc)|*.jsonc";
             ofd.Multiselect = true;
             if (ofd.ShowDialog() == DialogResult.OK)
             {
@@ -285,14 +291,15 @@ namespace JSONEditor
             ToolStripMenuItem toolStripMenuItem = sender as ToolStripMenuItem;
             MultiFileTreeView.Nodes.Clear();
             MainTreeView.Nodes.Clear();
-            UpdateFileTreeView(toolStripMenuItem.Tag.ToString(), "*.json", true);
+            string[] fileTypeArray = new string[] { "*.json", "*.jsonc" };
+            UpdateFileTreeView(toolStripMenuItem.Tag.ToString(), fileTypeArray, true);
         }
 
-        private async void UpdateFileTreeView(string root, string fileFilter, bool FolderStructure = false)
+        private async void UpdateFileTreeView(string root, string[] fileFilter, bool FolderStructure = false)
         {
             MultiFileTreeView.Nodes.Clear();
             MultiFileTreeView.BeginUpdate();
-            if (FolderStructure && !string.IsNullOrEmpty(root) && !string.IsNullOrEmpty(fileFilter))
+            if (FolderStructure && !string.IsNullOrEmpty(root) && fileFilter.Length > 0)
             {
                 var rootDirInfo = new DirectoryInfo(root);
                 await Task.Run(() =>
@@ -300,7 +307,7 @@ namespace JSONEditor
                     this.Invoke((MethodInvoker)delegate
                     {
                         FileMenuItem.Enabled = false;
-                        this.Text = "Inropa JSON Editor - Loading Data...";
+                        this.Text = "Dakar2008's JSON Editor - Loading Data...";
                     });
                     TreeNode[] Nodes = GetDirectoryNodes(rootDirInfo, fileFilter, this);
                     MultiFileTreeView.Invoke(new Action(() =>
@@ -308,7 +315,7 @@ namespace JSONEditor
                         MultiFileTreeView.Nodes.Add(new TreeNode(rootDirInfo.Name, 2, 2, Nodes));
                     }));
                 });
-                this.Text = "Inropa JSON Editor";
+                this.Text = "Dakar2008's JSON Editor";
                 FileMenuItem.Enabled = true;
             }
             else
@@ -1136,7 +1143,8 @@ namespace JSONEditor
                 PopulateRecentFolders();
                 MultiFileTreeView.Nodes.Clear();
                 MainTreeView.Nodes.Clear();
-                UpdateFileTreeView(fbd.SelectedPath, "*.json", true);
+                string[] fileTypeArray = new string[] { "*.json", "*.jsonc" };
+                UpdateFileTreeView(fbd.SelectedPath, fileTypeArray, true);
             }
         }
 
