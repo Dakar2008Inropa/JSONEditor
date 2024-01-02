@@ -1,0 +1,57 @@
+MSBuild version 17.8.3+195e7f5a3 for .NET Framework
+Build started 14-12-2023 05:42:41.
+
+Project "E:\Development\JSONEditor\JSONEditor.sln" on node 1 (Build target(s)).
+ValidateSolutionConfiguration:
+  Building solution configuration "Release|Any CPU".
+Project "E:\Development\JSONEditor\JSONEditor.sln" (1) is building "E:\Development\JSONEditor\JSONEditor\JSONEditor.csproj" (2) on node 1 (default targets).
+CoreResGen:
+  No resources are out of date with respect to their source files. Skipping resource generation.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreGenerateAssemblyInfo:
+Skipping target "CoreGenerateAssemblyInfo" because all output files are up-to-date with respect to the input files.
+_GenerateSourceLinkFile:
+  Source Link file 'obj\Release\net6.0-windows\JSONEditor.sourcelink.json' is up-to-date.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CreateAppHost:
+Skipping target "_CreateAppHost" because all output files are up-to-date with respect to the input files.
+_CopyOutOfDateSourceItemsToOutputDirectory:
+Skipping target "_CopyOutOfDateSourceItemsToOutputDirectory" because all output files are up-to-date with respect to the input files.
+_CopyOutOfDateSourceItemsToOutputDirectoryAlways:
+  Copying file from "E:\Development\JSONEditor\JSONEditor\log4net.config" to "E:\Development\JSONEditor\JSONEditor\bin\Release\net6.0-windows\log4net.config".
+GenerateBuildDependencyFile:
+Skipping target "GenerateBuildDependencyFile" because all output files are up-to-date with respect to the input files.
+GenerateBuildRuntimeConfigurationFiles:
+Skipping target "GenerateBuildRuntimeConfigurationFiles" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  JSONEditor -> E:\Development\JSONEditor\JSONEditor\bin\Release\net6.0-windows\JSONEditor.dll
+Done Building Project "E:\Development\JSONEditor\JSONEditor\JSONEditor.csproj" (default targets).
+Done Building Project "E:\Development\JSONEditor\JSONEditor.sln" (Build target(s)).
+Deferred Messages
+  
+  Detailed Build Summary
+  ======================
+      
+  
+  ============================== Build Hierarchy (IDs represent configurations) =====================================================
+  Id                  : Exclusive Time   Total Time   Path (Targets)
+  -----------------------------------------------------------------------------------------------------------------------------------
+  0                   : 0.145s           1.864s       E:\Development\JSONEditor\JSONEditor.sln (Build) 
+  . 1                 : 1.719s           1.719s       E:\Development\JSONEditor\JSONEditor\JSONEditor.csproj () 
+  
+  ============================== Node Utilization (IDs represent configurations) ====================================================
+  Timestamp:            1        Duration   Cumulative
+  -----------------------------------------------------------------------------------------------------------------------------------
+  638381257622519775:   0        0,140s     0,140s ..
+  638381257623920089:   1        1,719s     1,859s ..................................
+  638381257641107220:   0        0,009s     1,868s 
+  -----------------------------------------------------------------------------------------------------------------------------------
+  Utilization:          100,0    Average Utilization: 100,0
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.22

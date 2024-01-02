@@ -1,7 +1,6 @@
 using JSONEditor.Classes.Application;
 using JSONEditor.Classes.RecentFiles;
 using JSONEditor.Classes.RecentFolders;
-using JSONEditor.Classes.Tools;
 using JSONEditor.Forms;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
@@ -243,7 +242,10 @@ namespace JSONEditor
                 recentFile.Image = Properties.Resources.Fatcow_Farm_Fresh_Json_16;
                 recentFile.Tag = file.Path;
                 recentFile.Click += RecentFile_Click;
-                RecentFilesMenuItem.DropDownItems.Add(recentFile);
+                if (File.Exists(file.Path))
+                {
+                    RecentFilesMenuItem.DropDownItems.Add(recentFile);
+                }
             }
         }
 
@@ -271,7 +273,10 @@ namespace JSONEditor
                 recentFolder.Tag = folder.Path;
                 recentFolder.Image = Properties.Resources.Custom_Icon_Design_Flatastic_1_Folder_48;
                 recentFolder.Click += RecentFolder_Click;
-                RecentFoldersMenuItem.DropDownItems.Add(recentFolder);
+                if (Directory.Exists(folder.Path))
+                {
+                    RecentFoldersMenuItem.DropDownItems.Add(recentFolder);
+                }
             }
         }
 
@@ -1667,7 +1672,7 @@ namespace JSONEditor
         private void CopyToAllNodes()
         {
             CopyClass cc = new CopyClass();
-            this.Invoke((MethodInvoker)delegate 
+            this.Invoke((MethodInvoker)delegate
             {
                 TreeNode selectedNode = null;
                 selectedNode = MainTreeView.SelectedNode;
